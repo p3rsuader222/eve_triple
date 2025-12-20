@@ -470,7 +470,8 @@
             <!-- Tab 1: Excel Splitter -->
             <div class="tab-content active" id="splitter">
                 <div class="info-box">
-                    <strong>Step 1:</strong> Upload your Excel file and split it based on unique values in any column
+                    <strong>Step 1:</strong> Upload your Excel file and split it based on unique values in any column<br>
+                    <small style="color: #856404;">⚠️ For files over 100K rows: Close other tabs, use "Save to Folder" instead of ZIP</small>
                 </div>
                 
                 <div class="upload-area" id="uploadArea1">
@@ -514,7 +515,11 @@
                 <div class="status" id="status1"></div>
                 
                 <div class="note">
-                    <strong>💡 Next Step:</strong> After splitting, switch to the "Generate Emails" tab to create email drafts for each file.
+                    <strong>💡 Tips:</strong><br>
+                    • For large files (100K+ rows), use "Save to Folder" instead of ZIP<br>
+                    • Close other browser tabs when processing very large files<br>
+                    • The app processes everything in your browser - no data is uploaded<br>
+                    <strong>Next Step:</strong> After splitting, switch to the "Generate Emails" tab
                 </div>
             </div>
             
@@ -971,33 +976,78 @@ Best regards</textarea>
                 return;
             }
             
-            showStatus1('Processing...', 'info');
+            // Check file size
+            const rowCount = data1.length - 1;
+            if (rowCount > 100000) {
+                const confirm = window.confirm(
+                    `⚠️ Large file detected (${rowCount.toLocaleString()} rows).\n\n` +
+                    `This may take several minutes and could cause browser slowdown.\n\n` +
+                    `For files over 100K rows, consider:\n` +
+                    `• Using "Save to Folder" instead of ZIP\n` +
+                    `• Closing other browser tabs\n` +
+                    `• Processing in smaller batches\n\n` +
+                    `Continue anyway?`
+                );
+                if (!confirm) return;
+            }
+            
+            showStatus1('Processing large file... Please wait and do not close this tab.', 'info');
             processFolder1.disabled = true;
             processZip1.disabled = true;
             progress1.classList.add('show');
             
             try {
                 const headers = data1[0];
-                const rows = data1.slice(1);
                 const groups = {};
                 let skippedRows = 0;
                 
-                rows.forEach(row => {
-                    const criteriaValue = row[columnIndex];
-                    const sanitized = sanitizeFilename(criteriaValue);
+                // Process rows in chunks to prevent UI freezing
+                const CHUNK_SIZE = 1000;
+                const totalRows = data1.length - 1;
+                
+                for (let i = 1; i < data1.length; i += CHUNK_SIZE) {
+                    const chunk = data1.slice(i, Math.min(i + CHUNK_SIZE, data1.length));
                     
-                    if (!sanitized) {
-                        skippedRows++;
-                        return;
-                    }
+                    chunk.forEach(row => {
+                        const criteriaValue = row[columnIndex];
+                        const sanitized = sanitizeFilename(criteriaValue);
+                        
+                        if (!sanitized) {
+                            skippedRows++;
+                            return;
+                        }
+                        
+                        if (!groups[sanitized]) {
+                            groups[sanitized] = [];
+                        }
+                        groups[sanitized].push(row);
+                    });
                     
-                    if (!groups[sanitized]) {
-                        groups[sanitized] = [];
-                    }
-                    groups[sanitized].push(row);
-                });
+                    // Update progress during grouping
+                    const groupProgress = Math.round((i / totalRows) * 30);
+                    progressFill1.style.width = groupProgress + '%';
+                    progressFill1.textContent = `Analyzing: ${groupProgress}%`;
+                    
+                    // Yield to UI thread
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
                 
                 const uniqueValues = Object.keys(groups);
+                
+                if (uniqueValues.length > 500 && mode === 'zip') {
+                    const confirm = window.confirm(
+                        `⚠️ This will create ${uniqueValues.length} files in a ZIP.\n\n` +
+                        `Large ZIP files may fail to download.\n\n` +
+                        `Recommended: Use "Save to Folder" instead.\n\n` +
+                        `Continue with ZIP anyway?`
+                    );
+                    if (!confirm) {
+                        processFolder1.disabled = false;
+                        processZip1.disabled = false;
+                        progress1.classList.remove('show');
+                        return;
+                    }
+                }
                 
                 if (mode === 'folder') {
                     await processToFolder1(uniqueValues, groups, headers);
@@ -1013,7 +1063,11 @@ Best regards</textarea>
                 showStatus1(message, 'success');
                 progress1.classList.remove('show');
             } catch (error) {
-                showStatus1('Error processing file: ' + error.message, 'error');
+                if (error.message.includes('memory') || error.message.includes('Maximum call stack')) {
+                    showStatus1('❌ File too large for browser memory. Try splitting into smaller files first.', 'error');
+                } else {
+                    showStatus1('Error processing file: ' + error.message, 'error');
+                }
                 progress1.classList.remove('show');
             }
             
@@ -1023,6 +1077,7 @@ Best regards</textarea>
         
         async function processToFolder1(uniqueValues, groups, headers) {
             let processed = 0;
+            const total = uniqueValues.length;
             
             for (const value of uniqueValues) {
                 const valueRows = groups[value];
@@ -1041,15 +1096,21 @@ Best regards</textarea>
                 await writable.close();
                 
                 processed++;
-                const percent = Math.round((processed / uniqueValues.length) * 100);
+                const percent = Math.round(30 + (processed / total) * 70);
                 progressFill1.style.width = percent + '%';
-                progressFill1.textContent = percent + '%';
+                progressFill1.textContent = `Writing files: ${processed}/${total}`;
+                
+                // Yield to UI every 10 files for better responsiveness
+                if (processed % 10 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
             }
         }
         
         async function processToZip1(uniqueValues, groups, headers) {
             const zip = new JSZip();
             let processed = 0;
+            const total = uniqueValues.length;
             
             for (const value of uniqueValues) {
                 const valueRows = groups[value];
@@ -1064,18 +1125,48 @@ Best regards</textarea>
                 zip.file(filename, wbout);
                 
                 processed++;
-                const percent = Math.round((processed / uniqueValues.length) * 100);
+                const percent = Math.round(30 + (processed / total) * 50);
                 progressFill1.style.width = percent + '%';
-                progressFill1.textContent = percent + '%';
+                progressFill1.textContent = `Creating files: ${processed}/${total}`;
                 
-                await new Promise(resolve => setTimeout(resolve, 10));
+                // Yield to UI every 5 files
+                if (processed % 5 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
             }
             
-            const zipBlob = await zip.generateAsync({ type: 'blob' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(zipBlob);
-            link.download = 'split_files.zip';
-            link.click();
+            // Generate ZIP with progress
+            progressFill1.style.width = '85%';
+            progressFill1.textContent = 'Generating ZIP file...';
+            
+            try {
+                const zipBlob = await zip.generateAsync({ 
+                    type: 'blob',
+                    compression: 'DEFLATE',
+                    compressionOptions: { level: 6 }
+                }, (metadata) => {
+                    // Update progress during ZIP generation
+                    const zipPercent = Math.round(85 + (metadata.percent * 0.15));
+                    progressFill1.style.width = zipPercent + '%';
+                    progressFill1.textContent = `Compressing: ${Math.round(metadata.percent)}%`;
+                });
+                
+                progressFill1.style.width = '100%';
+                progressFill1.textContent = 'Downloading...';
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(zipBlob);
+                link.download = 'split_files.zip';
+                link.click();
+                
+                // Clean up blob URL after download
+                setTimeout(() => URL.revokeObjectURL(link.href), 100);
+            } catch (error) {
+                if (error.message.includes('quota') || error.message.includes('storage')) {
+                    throw new Error('ZIP file too large. Use "Save to Folder" instead.');
+                }
+                throw error;
+            }
         }
         
         function showStatus1(message, type) {
