@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Workflow Suite</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab:hover {
+            background: #e9ecef;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            background: white;
+            border-bottom-color: #667eea;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn.secondary {
+            background: #6c757d;
+        }
+        
+        .btn.secondary:hover:not(:disabled) {
+            background: #5a6268;
+        }
+        
+        .btn.success {
+            background: #28a745;
+        }
+        
+        .btn.success:hover:not(:disabled) {
+            background: #218838;
+        }
+        
+        .section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .file-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .file-info.show {
+            display: block;
+        }
+        
+        .file-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .file-details {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .folder-info {
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 10px;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        
+        .file-list {
+            max-height: 150px;
+            overflow-y: auto;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .file-item {
+            padding: 5px;
+            font-size: 13px;
+            color: #495057;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .file-item:last-child {
+            border-bottom: none;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        select, input[type="text"], input[type="email"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            font-family: inherit;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .status.show {
+            display: block;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .progress {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .progress.show {
+            display: block;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #856404;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #004085;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Knowledge Base Styles */
+        .kb-topic {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .kb-topic:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+        
+        .kb-topic-header {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            transition: background 0.3s;
+        }
+        
+        .kb-topic-header:hover {
+            background: #e9ecef;
+        }
+        
+        .kb-topic-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .kb-topic-icon {
+            font-size: 20px;
+        }
+        
+        .kb-topic-arrow {
+            font-size: 20px;
+            color: #667eea;
+            transition: transform 0.3s;
+        }
+        
+        .kb-topic.open .kb-topic-arrow {
+            transform: rotate(90deg);
+        }
+        
+        .kb-topic-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+            background: white;
+        }
+        
+        .kb-topic.open .kb-topic-content {
+            max-height: 5000px;
+            transition: max-height 0.5s ease-in;
+        }
+        
+        .kb-topic-body {
+            padding: 20px;
+            color: #495057;
+            line-height: 1.8;
+        }
+        
+        .kb-topic-body h3 {
+            color: #667eea;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .kb-topic-body p {
+            margin-bottom: 12px;
+        }
+        
+        .kb-topic-body ul, .kb-topic-body ol {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+        
+        .kb-topic-body li {
+            margin-bottom: 8px;
+        }
+        
+        .kb-topic-body code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #e83e8c;
+        }
+        
+        .kb-search {
+            margin-bottom: 25px;
+        }
+        
+        .kb-search input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        
+        .kb-search input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Excel Workflow Suite</h1>
+            <p>Split Excel files by criteria and generate email drafts</p>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="splitter">
+                🔀 Split by Criteria
+            </div>
+            <div class="tab" data-tab="emailer">
+                📧 Generate Emails
+            </div>
+            <div class="tab" data-tab="knowledge">
+                📚 Knowledge Base
+            </div>
+        </div>
+        
+        <div class="content">
+            <!-- Tab 1: Excel Splitter -->
+            <div class="tab-content active" id="splitter">
+                <div class="info-box">
+                    <strong>Step 1:</strong> Upload your Excel file and split it based on unique values in any column
+                </div>
+                
+                <div class="upload-area" id="uploadArea1">
+                    <div class="upload-icon">📂</div>
+                    <p style="margin-bottom: 10px; color: #666;"><strong>Click to upload</strong> or drag and drop</p>
+                    <p style="font-size: 14px; color: #999;">Excel files (.xlsx) only</p>
+                    <input type="file" id="fileInput1" accept=".xlsx">
+                </div>
+                
+                <div class="file-info" id="fileInfo1">
+                    <div class="file-name" id="fileName1"></div>
+                    <div class="file-details" id="fileDetails1"></div>
+                </div>
+                
+                <div class="section hidden" id="columnSection1">
+                    <label for="splitColumn1">Select the column to split by (each unique value will create a separate file):</label>
+                    <select id="splitColumn1">
+                        <option value="">-- Select a column --</option>
+                    </select>
+                </div>
+                
+                <div class="section hidden" id="outputSection1">
+                    <label>📂 Output Location:</label>
+                    <p style="font-size: 14px; color: #666; margin-bottom: 10px;">Choose where to save the split files</p>
+                    <button class="btn secondary" id="selectFolder1">Select Output Folder</button>
+                    <div class="folder-info" id="folderName1"></div>
+                </div>
+                
+                <div class="hidden" id="buttonGroup1">
+                    <button class="btn" id="processFolder1" style="display:none;">Save to Selected Folder</button>
+                    <button class="btn secondary" id="processZip1" style="display:none;">Download as ZIP File</button>
+                </div>
+                
+                <div class="progress" id="progress1">
+                    <p style="margin-bottom: 10px; color: #666;">Processing files...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill1">0%</div>
+                    </div>
+                </div>
+                
+                <div class="status" id="status1"></div>
+                
+                <div class="note">
+                    <strong>💡 Next Step:</strong> After splitting, switch to the "Generate Emails" tab to create email drafts for each file.
+                </div>
+            </div>
+            
+            <!-- Tab 2: Email Generator -->
+            <div class="tab-content" id="emailer">
+                <div class="info-box">
+                    <strong>Step 2:</strong> Generate Outlook email files from your split Excel files
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">📁 Select Excel Files Folder</div>
+                    <button class="btn" id="selectInput2">Select Folder with Excel Files</button>
+                    <div class="folder-info" id="inputFolder2"></div>
+                    <div class="file-list" id="fileList2"></div>
+                </div>
+                
+                <div class="section hidden" id="emailConfig2">
+                    <div class="section-title">✉️ Configure Email Template</div>
+                    
+                    <label for="emailSubject2">Subject Line:</label>
+                    <input type="text" id="emailSubject2" placeholder="e.g., Company Report - {{filename}}" value="Company Report - {{filename}}">
+                    
+                    <label for="emailBody2">Email Body:</label>
+                    <textarea id="emailBody2" placeholder="Enter your email message here...">Dear Team,
+
+Please find the attached report.
+
+Best regards</textarea>
+                    
+                    <label for="ccEmail2">CC (optional):</label>
+                    <input type="email" id="ccEmail2" placeholder="cc@example.com">
+                    
+                    <div class="hidden" id="columnSection2">
+                        <label for="emailColumn2">Select Column with Email Addresses:</label>
+                        <select id="emailColumn2">
+                            <option value="">-- Select a column --</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="section hidden" id="outputSection2">
+                    <div class="section-title">💾 Select Output Folder</div>
+                    <button class="btn secondary" id="selectOutput2">Select Output Folder for Email Files</button>
+                    <div class="folder-info" id="outputFolder2"></div>
+                </div>
+                
+                <button class="btn success hidden" id="generate2">Generate Email Files</button>
+                
+                <div class="progress" id="progress2">
+                    <p style="margin-bottom: 10px; color: #666;">Creating email files...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill2">0%</div>
+                    </div>
+                </div>
+                
+                <div class="status" id="status2"></div>
+                
+                <div class="note">
+                    <strong>💡 Tips:</strong><br>
+                    • Use {{filename}} in subject to include the Excel filename<br>
+                    • Email files (.eml) will open in Outlook when double-clicked<br>
+                    • All recipients from the Excel file will be in the "To:" field
+                </div>
+            </div>
+            
+            <!-- Tab 3: Knowledge Base -->
+            <div class="tab-content" id="knowledge">
+                <div class="info-box">
+                    <strong>📚 Knowledge Base:</strong> Browse guides and documentation for using this app
+                </div>
+                
+                <div class="kb-search">
+                    <input type="text" id="kbSearch" placeholder="🔍 Search topics...">
+                </div>
+                
+                <div id="kbTopics">
+                    <!-- Topics will be generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============= KNOWLEDGE BASE DATA =============
+        // To add a new topic, simply copy one of the objects below and modify it
+        const knowledgeBaseTopics = [
+            {
+                icon: "⚡",
+                title: "Ultimate Excel Power Query Guide — Fully Detailed & Commercial Ready",
+                content: `
+                    <h3>1️⃣ Open a new workbook</h3>
+                    <ol>
+                        <li>Open <strong>Excel</strong></li>
+                        <li>Click <strong>Blank Workbook</strong></li>
+                    </ol>
+                    
+                    <h3>2️⃣ Load all files from a folder</h3>
+                    <ol>
+                        <li>Top menu → <strong>Data</strong> tab</li>
+                        <li>Click <strong>Get Data → From File → From Folder</strong></li>
+                        <li>In the popup → <strong>Browse</strong>, select your folder → <strong>OK</strong></li>
+                        <li>Folder dialog shows all files → click <strong>Combine → Combine & Transform Data</strong></li>
+                        <li>Power Query Editor opens automatically</li>
+                    </ol>
+                    <p><em>You now have your "sample file" and the "combined query" (<code>Export</code>) in the left panel.</em></p>
+                    
+                    <h3>3️⃣ Stop automatic type guessing</h3>
+                    <ol>
+                        <li>Left panel → click <strong>Export</strong> (final combined query)</li>
+                        <li>Right panel → <strong>Applied Steps → find "Changed Type" → click ❌</strong></li>
+                    </ol>
+                    <p><em>This prevents decimals from being corrupted (e.g., <code>0,1</code> → <code>1</code>).</em></p>
+                    
+                    <h3>4️⃣ Fix decimal numbers (optional)</h3>
+                    <ol>
+                        <li>Click the header of columns you want to fix (e.g., <code>m</code> and <code>n</code>)</li>
+                        <li>Top menu → <strong>Transform tab → Replace Values</strong>
+                            <ul>
+                                <li>Value to Find: <code>,</code></li>
+                                <li>Replace With: <code>.</code></li>
+                                <li>Click <strong>OK</strong></li>
+                            </ul>
+                        </li>
+                        <li>With the same columns selected → <strong>Transform tab → Data Type → Decimal Number</strong></li>
+                    </ol>
+                    <p><em>Numbers like <code>0,1</code> → <code>0.1</code> and <code>0,13</code> → <code>0.13</code>.</em></p>
+                    
+                    <h3>5️⃣ Add calculated/validation columns</h3>
+                    <p><strong>A) Check if N &lt; M</strong></p>
+                    <ol>
+                        <li>Top menu → <strong>Add Column tab → Custom Column</strong></li>
+                        <li>Popup opens:
+                            <ul>
+                                <li><strong>New column name:</strong> <code>Check_N_lt_M</code></li>
+                                <li><strong>Custom column formula:</strong><br>
+                                <code>if [N] = null or [M] = null then "Missing" else if [N] &lt; [M] then "Yes" else "No"</code></li>
+                            </ul>
+                        </li>
+                        <li>Click <strong>OK</strong></li>
+                        <li>Drag column <strong>after N</strong> (or right-click → Move → Left/Right)</li>
+                    </ol>
+                    
+                    <p><strong>B) Sum of E + F</strong></p>
+                    <ol>
+                        <li>Add Column tab → <strong>Custom Column</strong></li>
+                        <li>Name: <code>Sum_EF</code></li>
+                        <li>Formula:<br>
+                        <code>(if [E] = null then 0 else [E]) + (if [F] = null then 0 else [F])</code></li>
+                        <li>Click <strong>OK</strong></li>
+                        <li>Drag the column <strong>after F</strong></li>
+                    </ol>
+                    <p><em>Formulas now handle blanks safely.</em></p>
+                    
+                    <h3>6️⃣ Grouping / Aggregation — Average Price per Seller</h3>
+                    <ol>
+                        <li>Ensure your <strong>Price column</strong> is numeric: select → <strong>Transform tab → Data Type → Decimal Number</strong></li>
+                        <li>Select the column identifying the seller (e.g., <code>Seller</code>)</li>
+                        <li>Top menu → <strong>Transform tab → Group By</strong></li>
+                        <li>In the <strong>Group By</strong> dialog:
+                            <ul>
+                                <li><strong>Group by:</strong> <code>Seller</code></li>
+                                <li><strong>Operation:</strong> <strong>Average</strong></li>
+                                <li><strong>Column:</strong> <code>Price</code></li>
+                                <li><strong>New column name:</strong> <code>AveragePrice</code></li>
+                            </ul>
+                        </li>
+                        <li>Click <strong>OK</strong></li>
+                        <li>Optional: add other aggregates like <strong>Count of Products</strong>, <strong>Max/Min Price</strong></li>
+                    </ol>
+                    <p><em>PQ creates one row per seller with the average price of all their products.</em></p>
+                    
+                    <h3>7️⃣ Arrange columns visually</h3>
+                    <ul>
+                        <li>Drag-and-drop headers in the main table to reorder</li>
+                        <li>OR Home tab → <strong>Manage Columns → Choose Columns</strong> → drag to reorder → <strong>OK</strong></li>
+                        <li>Formulas remain intact because PQ references <strong>column names</strong>, not positions.</li>
+                    </ul>
+                    
+                    <h3>8️⃣ Load final table into Excel</h3>
+                    <ol>
+                        <li>Top menu → <strong>Home tab → Close & Load → Close & Load To…</strong></li>
+                        <li>Choose where to place your table (e.g., existing worksheet or new worksheet) → <strong>OK</strong></li>
+                        <li>Excel now shows:
+                            <ul>
+                                <li>Original columns with decimals preserved</li>
+                                <li><code>Check_N_lt_M</code> after <code>N</code></li>
+                                <li><code>Sum_EF</code> after <code>F</code></li>
+                                <li>Optional grouped summary per seller</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    
+                    <h3>9️⃣ Set up a reusable "template" query</h3>
+                    <ol>
+                        <li>Keep this workbook saved as a template</li>
+                        <li>Optional: rename query → <code>Combined_Files_Template</code></li>
+                        <li>When adding new files:
+                            <ul>
+                                <li>Save new Excel files <strong>in the same folder</strong></li>
+                                <li>Open template workbook → click anywhere in the table → <strong>Right-click → Refresh</strong></li>
+                            </ul>
+                        </li>
+                        <li>PQ automatically:
+                            <ul>
+                                <li>Includes new files</li>
+                                <li>Applies decimal fixes</li>
+                                <li>Adds <code>Check_N_lt_M</code> and <code>Sum_EF</code></li>
+                                <li>Maintains column order</li>
+                                <li>Recalculates grouped averages</li>
+                            </ul>
+                        </li>
+                    </ol>
+                `
+            },
+            
+            // TO ADD A NEW TOPIC: Copy the template below, uncomment it, and fill in your content
+            /*
+            {
+                icon: "🎯",  // Choose an emoji icon
+                title: "Your Topic Title Here",
+                content: `
+                    <h3>Section Heading</h3>
+                    <p>Your paragraph text here.</p>
+                    
+                    <h3>Another Section</h3>
+                    <ul>
+                        <li>List item 1</li>
+                        <li>List item 2</li>
+                    </ul>
+                    
+                    <p>Use <code>code tags</code> for technical terms.</p>
+                `
+            },
+            */
+        ];
+        
+        // ============= KNOWLEDGE BASE FUNCTIONS =============
+        function renderKnowledgeBase() {
+            const container = document.getElementById('kbTopics');
+            container.innerHTML = '';
+            
+            knowledgeBaseTopics.forEach((topic, index) => {
+                const topicDiv = document.createElement('div');
+                topicDiv.className = 'kb-topic';
+                topicDiv.dataset.index = index;
+                
+                topicDiv.innerHTML = `
+                    <div class="kb-topic-header">
+                        <div class="kb-topic-title">
+                            <span class="kb-topic-icon">${topic.icon}</span>
+                            <span>${topic.title}</span>
+                        </div>
+                        <span class="kb-topic-arrow">▶</span>
+                    </div>
+                    <div class="kb-topic-content">
+                        <div class="kb-topic-body">
+                            ${topic.content}
+                        </div>
+                    </div>
+                `;
+                
+                topicDiv.querySelector('.kb-topic-header').addEventListener('click', () => {
+                    topicDiv.classList.toggle('open');
+                });
+                
+                container.appendChild(topicDiv);
+            });
+        }
+        
+        // Knowledge Base Search
+        document.addEventListener('DOMContentLoaded', () => {
+            renderKnowledgeBase();
+            
+            const searchInput = document.getElementById('kbSearch');
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const topics = document.querySelectorAll('.kb-topic');
+                
+                topics.forEach(topic => {
+                    const title = topic.querySelector('.kb-topic-title').textContent.toLowerCase();
+                    const content = topic.querySelector('.kb-topic-body').textContent.toLowerCase();
+                    
+                    if (title.includes(searchTerm) || content.includes(searchTerm)) {
+                        topic.style.display = 'block';
+                        if (searchTerm.length > 2) {
+                            topic.classList.add('open');
+                        }
+                    } else {
+                        topic.style.display = 'none';
+                    }
+                });
+                
+                if (searchTerm === '') {
+                    topics.forEach(topic => {
+                        topic.style.display = 'block';
+                        topic.classList.remove('open');
+                    });
+                }
+            });
+        });
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+                
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(targetTab).classList.add('active');
+            });
+        });
+
+        // ============= TAB 1: EXCEL SPLITTER =============
+        let workbook1 = null;
+        let data1 = null;
+        let outputHandle1 = null;
+        const supportsFS = 'showDirectoryPicker' in window;
+        
+        const uploadArea1 = document.getElementById('uploadArea1');
+        const fileInput1 = document.getElementById('fileInput1');
+        const fileInfo1 = document.getElementById('fileInfo1');
+        const fileName1 = document.getElementById('fileName1');
+        const fileDetails1 = document.getElementById('fileDetails1');
+        const columnSection1 = document.getElementById('columnSection1');
+        const splitColumn1 = document.getElementById('splitColumn1');
+        const outputSection1 = document.getElementById('outputSection1');
+        const selectFolder1 = document.getElementById('selectFolder1');
+        const folderName1 = document.getElementById('folderName1');
+        const buttonGroup1 = document.getElementById('buttonGroup1');
+        const processFolder1 = document.getElementById('processFolder1');
+        const processZip1 = document.getElementById('processZip1');
+        const progress1 = document.getElementById('progress1');
+        const progressFill1 = document.getElementById('progressFill1');
+        const status1 = document.getElementById('status1');
+        
+        uploadArea1.addEventListener('click', () => fileInput1.click());
+        
+        uploadArea1.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea1.classList.add('dragover');
+        });
+        
+        uploadArea1.addEventListener('dragleave', () => {
+            uploadArea1.classList.remove('dragover');
+        });
+        
+        uploadArea1.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea1.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                handleFile1(e.dataTransfer.files[0]);
+            }
+        });
+        
+        fileInput1.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile1(e.target.files[0]);
+            }
+        });
+        
+        splitColumn1.addEventListener('change', () => {
+            if (splitColumn1.value !== '') {
+                if (supportsFS) {
+                    outputSection1.classList.remove('hidden');
+                } else {
+                    buttonGroup1.classList.remove('hidden');
+                    processZip1.style.display = 'block';
+                }
+            }
+        });
+        
+        selectFolder1.addEventListener('click', selectOutputFolder1);
+        processFolder1.addEventListener('click', () => processSplit1('folder'));
+        processZip1.addEventListener('click', () => processSplit1('zip'));
+        
+        function handleFile1(file) {
+            if (!file.name.endsWith('.xlsx')) {
+                showStatus1('Please select an Excel file (.xlsx)', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    workbook1 = XLSX.read(e.target.result, { type: 'binary' });
+                    const sheetName = workbook1.SheetNames[0];
+                    const worksheet = workbook1.Sheets[sheetName];
+                    data1 = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    
+                    if (data1.length === 0) {
+                        showStatus1('The Excel file is empty!', 'error');
+                        return;
+                    }
+                    
+                    const headers = data1[0];
+                    fileName1.textContent = file.name;
+                    fileDetails1.textContent = `${data1.length - 1} rows, ${headers.length} columns`;
+                    fileInfo1.classList.add('show');
+                    
+                    splitColumn1.innerHTML = '<option value="">-- Select a column --</option>';
+                    headers.forEach((header, index) => {
+                        const option = document.createElement('option');
+                        option.value = index;
+                        option.textContent = header || `Column ${index + 1}`;
+                        splitColumn1.appendChild(option);
+                    });
+                    
+                    columnSection1.classList.remove('hidden');
+                    status1.classList.remove('show');
+                } catch (error) {
+                    showStatus1('Error reading file: ' + error.message, 'error');
+                }
+            };
+            reader.readAsBinaryString(file);
+        }
+        
+        async function selectOutputFolder1() {
+            try {
+                outputHandle1 = await window.showDirectoryPicker();
+                folderName1.textContent = `✓ Selected: ${outputHandle1.name}`;
+                buttonGroup1.classList.remove('hidden');
+                processFolder1.style.display = 'block';
+                processZip1.style.display = 'block';
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    showStatus1('Error selecting folder: ' + error.message, 'error');
+                }
+            }
+        }
+        
+        function sanitizeFilename(name) {
+            if (!name || name.trim() === '') return null;
+            let sanitized = String(name).trim()
+                .replace(/[<>:"\/\\|?*]/g, '_')
+                .replace(/^[.\s]+|[.\s]+$/g, '');
+            if (sanitized.length > 200) {
+                sanitized = sanitized.substring(0, 200);
+            }
+            return sanitized || null;
+        }
+        
+        async function processSplit1(mode) {
+            const columnIndex = parseInt(splitColumn1.value);
+            
+            if (isNaN(columnIndex)) {
+                showStatus1('Please select a split column first', 'error');
+                return;
+            }
+            
+            if (mode === 'folder' && !outputHandle1) {
+                showStatus1('Please select an output folder first', 'error');
+                return;
+            }
+            
+            showStatus1('Processing...', 'info');
+            processFolder1.disabled = true;
+            processZip1.disabled = true;
+            progress1.classList.add('show');
+            
+            try {
+                const headers = data1[0];
+                const rows = data1.slice(1);
+                const groups = {};
+                let skippedRows = 0;
+                
+                rows.forEach(row => {
+                    const criteriaValue = row[columnIndex];
+                    const sanitized = sanitizeFilename(criteriaValue);
+                    
+                    if (!sanitized) {
+                        skippedRows++;
+                        return;
+                    }
+                    
+                    if (!groups[sanitized]) {
+                        groups[sanitized] = [];
+                    }
+                    groups[sanitized].push(row);
+                });
+                
+                const uniqueValues = Object.keys(groups);
+                
+                if (mode === 'folder') {
+                    await processToFolder1(uniqueValues, groups, headers);
+                } else {
+                    await processToZip1(uniqueValues, groups, headers);
+                }
+                
+                let message = `✓ Successfully created ${uniqueValues.length} file(s)`;
+                if (skippedRows > 0) {
+                    message += ` (${skippedRows} rows with empty values were skipped)`;
+                }
+                
+                showStatus1(message, 'success');
+                progress1.classList.remove('show');
+            } catch (error) {
+                showStatus1('Error processing file: ' + error.message, 'error');
+                progress1.classList.remove('show');
+            }
+            
+            processFolder1.disabled = false;
+            processZip1.disabled = false;
+        }
+        
+        async function processToFolder1(uniqueValues, groups, headers) {
+            let processed = 0;
+            
+            for (const value of uniqueValues) {
+                const valueRows = groups[value];
+                const rowCount = valueRows.length;
+                const newData = [headers, ...valueRows];
+                const newWorksheet = XLSX.utils.aoa_to_sheet(newData);
+                const newWorkbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, 'Sheet1');
+                
+                const filename = `${value}_${rowCount}.xlsx`;
+                const wbout = XLSX.write(newWorkbook, { bookType: 'xlsx', type: 'array' });
+                
+                const fileHandle = await outputHandle1.getFileHandle(filename, { create: true });
+                const writable = await fileHandle.createWritable();
+                await writable.write(wbout);
+                await writable.close();
+                
+                processed++;
+                const percent = Math.round((processed / uniqueValues.length) * 100);
+                progressFill1.style.width = percent + '%';
+                progressFill1.textContent = percent + '%';
+            }
+        }
+        
+        async function processToZip1(uniqueValues, groups, headers) {
+            const zip = new JSZip();
+            let processed = 0;
+            
+            for (const value of uniqueValues) {
+                const valueRows = groups[value];
+                const rowCount = valueRows.length;
+                const newData = [headers, ...valueRows];
+                const newWorksheet = XLSX.utils.aoa_to_sheet(newData);
+                const newWorkbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, 'Sheet1');
+                
+                const filename = `${value}_${rowCount}.xlsx`;
+                const wbout = XLSX.write(newWorkbook, { bookType: 'xlsx', type: 'array' });
+                zip.file(filename, wbout);
+                
+                processed++;
+                const percent = Math.round((processed / uniqueValues.length) * 100);
+                progressFill1.style.width = percent + '%';
+                progressFill1.textContent = percent + '%';
+                
+                await new Promise(resolve => setTimeout(resolve, 10));
+            }
+            
+            const zipBlob = await zip.generateAsync({ type: 'blob' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(zipBlob);
+            link.download = 'split_files.zip';
+            link.click();
+        }
+        
+        function showStatus1(message, type) {
+            status1.textContent = message;
+            status1.className = 'status show ' + type;
+        }
+
+        // ============= TAB 2: EMAIL GENERATOR =============
+        let inputHandle2 = null;
+        let outputHandle2 = null;
+        let excelFiles2 = [];
+        
+        const selectInput2 = document.getElementById('selectInput2');
+        const inputFolder2 = document.getElementById('inputFolder2');
+        const fileList2 = document.getElementById('fileList2');
+        const emailConfig2 = document.getElementById('emailConfig2');
+        const columnSection2 = document.getElementById('columnSection2');
+        const emailColumn2 = document.getElementById('emailColumn2');
+        const outputSection2 = document.getElementById('outputSection2');
+        const selectOutput2 = document.getElementById('selectOutput2');
+        const outputFolder2 = document.getElementById('outputFolder2');
+        const generate2 = document.getElementById('generate2');
+        const progress2 = document.getElementById('progress2');
+        const progressFill2 = document.getElementById('progressFill2');
+        const status2 = document.getElementById('status2');
+        
+        selectInput2.addEventListener('click', selectInputFolder2);
+        selectOutput2.addEventListener('click', selectOutputFolder2);
+        generate2.addEventListener('click', generateEmails2);
+        
+        emailColumn2.addEventListener('change', () => {
+            if (emailColumn2.value !== '' && outputHandle2) {
+                generate2.disabled = false;
+            }
+        });
+        
+        async function selectInputFolder2() {
+            try {
+                inputHandle2 = await window.showDirectoryPicker();
+                inputFolder2.textContent = `✓ Selected: ${inputHandle2.name}`;
+                await loadExcelFiles2();
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    showStatus2('Error selecting folder: ' + error.message, 'error');
+                }
+            }
+        }
+        
+        async function loadExcelFiles2() {
+            excelFiles2 = [];
+            fileList2.innerHTML = '';
+            
+            try {
+                for await (const entry of inputHandle2.values()) {
+                    if (entry.kind === 'file' && entry.name.endsWith('.xlsx')) {
+                        excelFiles2.push(entry);
+                        const fileItem = document.createElement('div');
+                        fileItem.className = 'file-item';
+                        fileItem.textContent = `📄 ${entry.name}`;
+                        fileList2.appendChild(fileItem);
+                    }
+                }
+                
+                if (excelFiles2.length === 0) {
+                    showStatus2('No Excel files found in the selected folder', 'error');
+                    return;
+                }
+                
+                showStatus2(`Found ${excelFiles2.length} Excel file(s)`, 'success');
+                await loadColumnNames2();
+                emailConfig2.classList.remove('hidden');
+                outputSection2.classList.remove('hidden');
+                generate2.classList.remove('hidden');
+            } catch (error) {
+                showStatus2('Error reading folder: ' + error.message, 'error');
+            }
+        }
+        
+        async function loadColumnNames2() {
+            try {
+                const firstFile = excelFiles2[0];
+                const file = await firstFile.getFile();
+                const arrayBuffer = await file.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const data = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                
+                if (data.length > 0) {
+                    const headers = data[0];
+                    emailColumn2.innerHTML = '<option value="">-- Select a column --</option>';
+                    headers.forEach((header, index) => {
+                        const option = document.createElement('option');
+                        option.value = index;
+                        option.textContent = header || `Column ${index + 1}`;
+                        emailColumn2.appendChild(option);
+                    });
+                    columnSection2.classList.remove('hidden');
+                }
+            } catch (error) {
+                showStatus2('Error reading Excel file: ' + error.message, 'error');
+            }
+        }
+        
+        async function selectOutputFolder2() {
+            try {
+                outputHandle2 = await window.showDirectoryPicker();
+                outputFolder2.textContent = `✓ Selected: ${outputHandle2.name}`;
+                if (emailColumn2.value !== '') {
+                    generate2.disabled = false;
+                }
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    showStatus2('Error selecting output folder: ' + error.message, 'error');
+                }
+            }
+        }
+        
+        async function generateEmails2() {
+            const emailColumnIndex = parseInt(emailColumn2.value);
+            
+            if (isNaN(emailColumnIndex)) {
+                showStatus2('Please select an email column', 'error');
+                return;
+            }
+            
+            if (!outputHandle2) {
+                showStatus2('Please select an output folder', 'error');
+                return;
+            }
+            
+            generate2.disabled = true;
+            showStatus2('Generating email files...', 'info');
+            progress2.classList.add('show');
+            
+            try {
+                let processed = 0;
+                const subject = document.getElementById('emailSubject2').value || 'Report';
+                const body = document.getElementById('emailBody2').value || '';
+                const cc = document.getElementById('ccEmail2').value || '';
+                
+                for (const fileEntry of excelFiles2) {
+                    const file = await fileEntry.getFile();
+                    const arrayBuffer = await file.arrayBuffer();
+                    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const data = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                    
+                    const emails = [];
+                    for (let i = 1; i < data.length; i++) {
+                        const email = data[i][emailColumnIndex];
+                        if (email && email.toString().includes('@')) {
+                            emails.push(email.toString().trim());
+                        }
+                    }
+                    
+                    const uniqueEmails = [...new Set(emails)];
+                    
+                    if (uniqueEmails.length === 0) {
+                        console.warn(`No valid emails found in ${file.name}`);
+                        continue;
+                    }
+                    
+                    const attachmentFile = await fileEntry.getFile();
+                    const attachmentBuffer = await attachmentFile.arrayBuffer();
+                    
+                    const emailFileName = file.name.replace('.xlsx', '.eml');
+                    const emailSubject = subject.replace('{{filename}}', file.name.replace('.xlsx', ''));
+                    
+                    const emlContent = await createEMLFile(
+                        uniqueEmails.join(', '),
+                        cc,
+                        emailSubject,
+                        body,
+                        attachmentBuffer,
+                        file.name
+                    );
+                    
+                    const emlFileHandle = await outputHandle2.getFileHandle(emailFileName, { create: true });
+                    const writable = await emlFileHandle.createWritable();
+                    await writable.write(emlContent);
+                    await writable.close();
+                    
+                    processed++;
+                    const percent = Math.round((processed / excelFiles2.length) * 100);
+                    progressFill2.style.width = percent + '%';
+                    progressFill2.textContent = percent + '%';
+                }
+                
+                showStatus2(`✓ Successfully created ${processed} email file(s)`, 'success');
+                progress2.classList.remove('show');
+            } catch (error) {
+                showStatus2('Error generating emails: ' + error.message, 'error');
+                progress2.classList.remove('show');
+            }
+            
+            generate2.disabled = false;
+        }
+        
+        async function createEMLFile(to, cc, subject, body, attachmentBuffer, attachmentName) {
+            const boundary = '----=_NextPart_' + Date.now();
+            const attachmentData = arrayBufferToBase64(attachmentBuffer);
+            
+            const normalizedBody = body.replace(/\r?\n/g, '\r\n');
+            
+            let eml = 'From: <your.email@example.com>\r\n';
+            eml += 'To: ' + to + '\r\n';
+            
+            if (cc) {
+                eml += 'Cc: ' + cc + '\r\n';
+            }
+            
+            eml += 'Subject: ' + subject + '\r\n';
+            eml += 'MIME-Version: 1.0\r\n';
+            eml += 'Content-Type: multipart/mixed; boundary="' + boundary + '"\r\n';
+            eml += '\r\n';
+            
+            eml += '--' + boundary + '\r\n';
+            eml += 'Content-Type: text/plain; charset="UTF-8"\r\n';
+            eml += 'Content-Transfer-Encoding: 7bit\r\n';
+            eml += '\r\n';
+            eml += normalizedBody + '\r\n';
+            
+            eml += '--' + boundary + '\r\n';
+            eml += 'Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; name="' + attachmentName + '"\r\n';
+            eml += 'Content-Transfer-Encoding: base64\r\n';
+            eml += 'Content-Disposition: attachment; filename="' + attachmentName + '"\r\n';
+            eml += '\r\n';
+            eml += attachmentData + '\r\n';
+            
+            eml += '--' + boundary + '--\r\n';
+            
+            return eml;
+        }
+        
+        function arrayBufferToBase64(buffer) {
+            let binary = '';
+            const bytes = new Uint8Array(buffer);
+            const len = bytes.byteLength;
+            for (let i = 0; i < len; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            const base64 = btoa(binary);
+            const lines = base64.match(/.{1,76}/g) || [];
+            return lines.join('\r\n');
+        }
+        
+        function showStatus2(message, type) {
+            status2.textContent = message;
+            status2.className = 'status show ' + type;
+        }
+    </script>
+</body>
+</html>
