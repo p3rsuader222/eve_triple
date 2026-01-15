@@ -7,6 +7,8 @@
     <title>Excel Workflow Suite</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
     <style>
         * {
             margin: 0;
@@ -454,6 +456,196 @@
             outline: none;
             border-color: #667eea;
         }
+
+        /* Google Sheets Sync Styles */
+        .column-mapping-container {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .mapping-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .mapping-row:hover {
+            background: #e9ecef;
+        }
+
+        .mapping-row .excel-col {
+            flex: 1;
+            font-weight: 600;
+            color: #28a745;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mapping-row .arrow {
+            color: #667eea;
+            font-size: 20px;
+        }
+
+        .mapping-row select {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .mapping-row .remove-mapping {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .mapping-row .remove-mapping:hover {
+            background: #c82333;
+        }
+
+        .add-mapping-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .add-mapping-btn:hover {
+            background: #218838;
+        }
+
+        .google-auth-section {
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .google-auth-section h3 {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .google-auth-section .auth-status {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .btn.google {
+            background: white;
+            color: #4285f4;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn.google:hover {
+            background: #f1f1f1;
+            transform: translateY(-2px);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 2px solid #ddd;
+            transition: all 0.3s;
+        }
+
+        .radio-option:hover {
+            border-color: #667eea;
+        }
+
+        .radio-option input[type="radio"] {
+            accent-color: #667eea;
+            width: 18px;
+            height: 18px;
+        }
+
+        .radio-option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .column-letter-input {
+            width: 80px !important;
+            text-align: center;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .sheets-icon {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+        }
+
+        .mapping-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 6px 6px 0 0;
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+
+        .mapping-header span {
+            flex: 1;
+            text-align: center;
+        }
+
+        .api-key-section {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .api-key-section label {
+            color: #856404;
+        }
     </style>
 </head>
 
@@ -473,6 +665,9 @@
             </div>
             <div class="tab" data-tab="knowledge">
                 📚 Knowledge Base
+            </div>
+            <div class="tab" data-tab="gsync">
+                🔄 Sheets Sync
             </div>
         </div>
 
@@ -540,6 +735,8 @@
                 <div class="section">
                     <div class="section-title">📁 Select Excel Files Folder</div>
                     <button class="btn" id="selectInput2">Select Folder with Excel Files</button>
+                    <!-- Fallback file input -->
+                    <input type="file" id="fallbackInput2" multiple accept=".xlsx" style="display: none;">
                     <div class="folder-info" id="inputFolder2"></div>
                     <div class="file-list" id="fileList2"></div>
                 </div>
@@ -608,6 +805,122 @@ Best regards</textarea>
                     <!-- Topics will be generated here -->
                 </div>
             </div>
+
+            <!-- Tab 4: Google Sheets Sync -->
+            <div class="tab-content" id="gsync">
+                <div class="info-box">
+                    <strong>🔄 Excel to Google Sheets Sync:</strong> Import specific columns from Excel to your Google
+                    Sheet with custom column mapping
+                </div>
+
+                <!-- Web App URL Section -->
+                <div class="section"
+                    style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 20px; border-radius: 8px;">
+                    <div class="section-title" style="color: white;">� Google Apps Script Web App URL</div>
+                    <p style="margin-bottom: 15px; opacity: 0.9; font-size: 14px;">
+                        This app uses a simple Google Apps Script to write to your sheets. See the Knowledge Base for
+                        setup instructions (takes ~2 minutes).
+                    </p>
+                    <input type="text" id="webAppUrl4" placeholder="Paste your Google Apps Script Web App URL here"
+                        style="width: 100%; padding: 12px; border-radius: 6px; border: none; font-size: 14px;">
+                    <p style="font-size: 12px; margin-top: 8px; opacity: 0.8;">
+                        The URL looks like: <code
+                            style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">https://script.google.com/macros/s/xxx.../exec</code>
+                    </p>
+                </div>
+
+                <!-- Google Sheets Configuration -->
+                <div class="section">
+                    <div class="section-title">📊 Google Sheets Configuration</div>
+
+                    <label for="sheetsUrl4">Google Sheets URL or ID:</label>
+                    <input type="text" id="sheetsUrl4"
+                        placeholder="Paste the full Google Sheets URL or just the spreadsheet ID">
+
+                    <label for="sheetName4">Sheet Name (tab name within the spreadsheet):</label>
+                    <input type="text" id="sheetName4" placeholder="e.g., My Data, Sheet1, Import Data" value="Sheet1">
+                </div>
+
+                <!-- Excel File Upload -->
+                <div class="section">
+                    <div class="section-title">📁 Excel File</div>
+                    <div class="upload-area" id="uploadArea4">
+                        <div class="upload-icon">📂</div>
+                        <p style="margin-bottom: 10px; color: #666;"><strong>Click to upload</strong> or drag and drop
+                        </p>
+                        <p style="font-size: 14px; color: #999;">Excel files (.xlsx) only</p>
+                        <input type="file" id="fileInput4" accept=".xlsx">
+                    </div>
+
+                    <div class="file-info" id="fileInfo4">
+                        <div class="file-name" id="fileName4"></div>
+                        <div class="file-details" id="fileDetails4"></div>
+                    </div>
+                </div>
+
+                <!-- Write Mode Selection -->
+                <div class="section hidden" id="modeSection4">
+                    <div class="section-title">✏️ Import Mode</div>
+                    <div class="radio-group">
+                        <label class="radio-option selected">
+                            <input type="radio" name="importMode4" value="append" checked>
+                            <span>➕ Append</span>
+                            <small style="opacity: 0.8;">(Add after existing data)</small>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="importMode4" value="overwrite">
+                            <span>🔄 Overwrite</span>
+                            <small style="opacity: 0.8;">(Replace all data in sheet)</small>
+                        </label>
+                    </div>
+
+                    <label for="startRow4">Start Row (for append mode, leave empty to auto-detect):</label>
+                    <input type="text" id="startRow4"
+                        placeholder="e.g., 2 (optional - will auto-detect next empty row)">
+                </div>
+
+                <!-- Column Mapping -->
+                <div class="section hidden" id="mappingSection4">
+                    <div class="section-title">🔗 Column Mapping</div>
+                    <p style="color: #666; margin-bottom: 15px;">Map Excel columns to Google Sheets columns. Use column
+                        letters (A, B, C...) for Google Sheets destination.</p>
+
+                    <div class="column-mapping-container">
+                        <div class="mapping-header">
+                            <span>📗 Excel Column</span>
+                            <span></span>
+                            <span>📊 Google Sheets Column</span>
+                            <span></span>
+                        </div>
+                        <div id="mappingRows4">
+                            <!-- Mapping rows will be added here -->
+                        </div>
+                        <button class="add-mapping-btn" id="addMapping4">+ Add Column Mapping</button>
+                    </div>
+                </div>
+
+                <!-- Sync Button -->
+                <button class="btn success hidden" id="syncBtn4">🚀 Sync to Google Sheets</button>
+
+                <div class="progress" id="progress4">
+                    <p style="margin-bottom: 10px; color: #666;">Syncing data...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill4">0%</div>
+                    </div>
+                </div>
+
+                <div class="status" id="status4"></div>
+
+                <div class="note">
+                    <strong>💡 How to use:</strong><br>
+                    1. Get a Google API key from <a href="https://console.cloud.google.com/apis/credentials"
+                        target="_blank">Google Cloud Console</a><br>
+                    2. Enable the Google Sheets API in your project<br>
+                    3. Make sure your Google Sheet is shared (Anyone with link can edit) or use OAuth<br>
+                    4. Paste your spreadsheet URL or ID, specify the sheet name, upload Excel, and map columns<br>
+                    5. Use column letters (A, B, C...) for Google Sheets mapping
+                </div>
+            </div>
         </div>
     </div>
 
@@ -615,6 +928,78 @@ Best regards</textarea>
         // ============= KNOWLEDGE BASE DATA =============
         // To add a new topic, simply copy one of the objects below and modify it
         const knowledgeBaseTopics = [
+            {
+                icon: "✂️",
+                title: "Excel Splitter — User Guide",
+                content: `
+                    <h3>📋 Overview</h3>
+                    <p>The <strong>Excel Splitter</strong> (Tab 1) takes a large "Master File" and breaks it into smaller, separate Excel files based on a column you choose (e.g., splitting a Sales Report by "Manager" or "Region").</p>
+
+                    <h3>📝 Step-by-Step Instructions</h3>
+                    <ol>
+                        <li><strong>Select Master File:</strong> Click the folder icon to choose your main Excel file.</li>
+                        <li><strong>Choose Split Column:</strong> The app will read your headers. Select the specific column you want to group by (e.g., "Department").
+                            <ul>
+                                <li><em>Example:</em> If you choose "Department", you will get files like <code>Department_HR.xlsx</code>, <code>Department_IT.xlsx</code>.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Select Output Folder:</strong> Click to choose where to save the new files.
+                            <ul>
+                                <li><em>Note:</em> Using the Folder Picker requires permission. If your computer blocks it, the app may default to a generic download or ZIP mode.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Generate:</strong> Click <strong>Split Files</strong>. The progress bar will show the status.</li>
+                    </ol>
+
+                    <h3>💡 Pro Tips</h3>
+                    <ul>
+                        <li><strong>Formatted Tables:</strong> The app tries to preserve your original table styles and headers.</li>
+                        <li><strong>Large Files:</strong> For very large files, give the app a moment to process. It handles thousands of rows in seconds.</li>
+                    </ul>
+                `
+            },
+            {
+                icon: "📧",
+                title: "Excel Emailer — User Guide",
+                content: `
+                    <h3>📋 Overview</h3>
+                    <p>The <strong>Excel Emailer</strong> (Tab 2) generates ready-to-send Outlook email files (<code>.eml</code>) for each Excel file in a folder. It's perfect for distributing the split reports you just created!</p>
+
+                    <h3>📝 Step-by-Step Instructions</h3>
+                    <ol>
+                        <li><strong>Select Input Files:</strong>
+                            <ul>
+                                <li><strong>Option A (Folder):</strong> Click "Select Input Folder" to load all Excel files from a directory.</li>
+                                <li><strong>Option B (Legacy/Files):</strong> Use the "Or select individual files" option if you can't select a folder (common on work PCs).</li>
+                            </ul>
+                        </li>
+                        <li><strong>Choose Email Column:</strong> Select the column inside your Excel files that contains the recipient's email address.
+                            <ul>
+                                <li>The app looks inside <em>each file</em> to find who to send it to.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Configure Template:</b>
+                            <ul>
+                                <li><strong>Subject:</strong> Enter your email subject line. Use <code>{{filename}}</code> to automatically insert the file's name.</li>
+                                <li><strong>Body:</strong> Type your message.</li>
+                                <li><strong>CC:</strong> Optional. Add a CC address for all emails.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Select Output:</strong> Choose a folder to save drafts.
+                            <ul>
+                                <li><strong>⚠️ Fallback Mode:</strong> If you don't select a folder (or can't), the app will automatically zip all emails into a <code>generated_emails.zip</code> file for you to download.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Generate:</strong> Click <strong>Generate Emails</strong>.</li>
+                    </ol>
+
+                    <h3>💡 Key Features</h3>
+                    <ul>
+                        <li><strong>Attachments:</strong> The Excel file itself is automatically attached to the email.</li>
+                        <li><strong>Multiple Recipients:</strong> If a file contains multiple unique email addresses in the column, the email will be sent to all of them.</li>
+                    </ul>
+                `
+            },
             {
                 icon: "⚡",
                 title: "Ultimate Excel Power Query Guide — Fully Detailed & Commercial Ready",
@@ -741,6 +1126,222 @@ Best regards</textarea>
                             </ul>
                         </li>
                     </ol>
+                `
+            },
+
+            {
+                icon: "⚡",
+                title: "Power Query — Automating Combined Reports",
+                content: `
+                    <h3>📋 Overview</h3>
+                    <p>Learn how to combine multiple Excel files (from the Splitter) into one master report using Power Query. This setup updates automatically when you add new files!</p>
+                `
+            },
+
+            {
+                icon: "🔄",
+                title: "Google Sheets Sync — Complete Setup Guide",
+                content: `
+                    <h3>📋 Overview</h3>
+                    <p>The <strong>Sheets Sync</strong> feature allows you to import specific columns from Excel files directly into your Google Sheets. You can map individual columns to different positions, choose to append or overwrite data, and work with shared spreadsheets.</p>
+                    
+                    <h3>🔧 Part 1: Setting Up Google Apps Script (One-Time Setup)</h3>
+                    <p>To bypass complex authentication, we'll create a tiny "helper script" attached to your Google Sheet. this takes about 2 minutes.</p>
+                    
+                    <h3>Step 1: Open Your Google Sheet</h3>
+                    <ol>
+                        <li>Open the Google Sheet you want to write to.</li>
+                        <li>In the top menu, click <strong>Extensions</strong> > <strong>Apps Script</strong>.</li>
+                        <li>A new tab will open with a code editor.</li>
+                    </ol>
+                    
+                    <h3>Step 2: Paste the Helper Script</h3>
+                    <ol>
+                        <li>Delete any code currently in the editor (like <code>function myFunction()...</code>).</li>
+                        <li>Copy and paste the following code exactly:</li>
+                    </ol>
+                    <pre style="background: #f4f4f4; padding: 10px; font-size: 11px; overflow-x: auto; border-radius: 4px;"><code>function doPost(e) {
+  try {
+    const params = JSON.parse(e.postData.contents);
+    const ss = SpreadsheetApp.openById(params.spreadsheetId);
+    let sheet = ss.getSheetByName(params.sheetName);
+    
+    if (!sheet) {
+      if (params.mode === 'overwrite') { // Only create if allowed or desired logic
+         // sheet = ss.insertSheet(params.sheetName); 
+         return ContentService.createTextOutput(JSON.stringify({ 'error': 'Sheet not found: ' + params.sheetName })).setMimeType(ContentService.MimeType.JSON);
+      } else {
+         return ContentService.createTextOutput(JSON.stringify({ 'error': 'Sheet not found: ' + params.sheetName })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    // Process data
+    const mappings = params.mappings;
+    const dataRows = params.data;
+    const mode = params.mode;
+    let startRow = params.startRow;
+
+    if (mode === 'overwrite') {
+      // sheet.clearContents(); // REMOVED: Don't wipe the whole sheet
+      startRow = 1;
+    } else if (!startRow) {
+      startRow = sheet.getLastRow() + 1;
+      if (startRow === 0) startRow = 1;
+    }
+    
+    // Prepare values and write column by column to preserve unmapped columns
+    // Helper to convert Letter to Index (A=1, B=2)
+    function colToIndex(char) {
+      let code = 0;
+      for (let i = 0; i < char.length; i++) {
+        code = code * 26 + char.charCodeAt(i) - 64;
+      }
+      return code;
+    }
+
+    const numRows = dataRows.length;
+    
+    // Process each mapping individually
+    mappings.forEach(m => {
+        const targetCol = colToIndex(m.sheetsCol); // 1-based index
+        const colData = [];
+        
+        // Extract this column's data from all rows
+        for (let i = 0; i < numRows; i++) {
+           const val = dataRows[i][m.excelCol];
+           colData.push([val !== undefined ? val : ""]);
+        }
+        
+        if (colData.length > 0) {
+           // If Overwrite mode, clear the rest of the column first?
+           // Yes, to ensure no old data remains below.
+           if (mode === 'overwrite') {
+               try {
+                  // Clear from startRow to the end of the sheet for this column
+                  const maxRows = sheet.getMaxRows();
+                  if (maxRows >= startRow) {
+                      sheet.getRange(startRow, targetCol, maxRows - startRow + 1, 1).clearContent();
+                  }
+               } catch (e) {
+                   // Ignore range errors if sheet is empty
+               }
+           }
+           
+           // Write the new data for this column
+           sheet.getRange(startRow, targetCol, numRows, 1).setValues(colData);
+        }
+    });
+
+    return ContentService.createTextOutput(JSON.stringify({ 'result': 'success', 'rows': numRows })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ 'error': error.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}</code></pre>
+                    <p><em>(Copy the code above. Note: Use the "Copy" button if available or select all and copy)</em></p>
+
+                    <h3>Step 3: Deploy as Web App</h3>
+                    <ol>
+                        <li>Click the blue <strong>Deploy</strong> button (top right) > <strong>New deployment</strong>.</li>
+                        <li>Click the "Select type" gear icon > <strong>Web app</strong>.</li>
+                        <li>Description: "Excel Sync".</li>
+                        <li>Execute as: <strong>Me</strong> (your email).</li>
+                        <li>Who has access: <strong>Anyone</strong> (IMPORTANT! This allows the app to send data without login).</li>
+                        <li>Click <strong>Deploy</strong>.</li>
+                        <li>Authorize access if prompted (Click Review permissions > Select account > Advanced > Go to (unsafe) > Allow).</li>
+                    </ol>
+
+                    <h3>Step 4: Get Your Web App URL</h3>
+                    <ol>
+                        <li>Copy the <strong>Web App URL</strong> provided (ends in <code>/exec</code>).</li>
+                        <li>Keep this URL safe!</li>
+                    </ol>
+
+                    <h3>🚀 Part 2: Using the Sheets Sync Feature</h3>
+                    
+                    <h3>Step 1: Enter Web App URL</h3>
+                    <ol>
+                        <li>In the app, paste the URL into the green "Google Apps Script Web App URL" box.</li>
+                    </ol>
+                    
+                    <h3>Step 2: Configure & Sync</h3>
+                    <ol>
+                        <li>Enter your Google Sheet URL/ID and Tab Name.</li>
+                        <li>Upload Excel file.</li>
+                        <li>Map columns and click Sync!</li>
+                    </ol>
+                    
+                    <h3>📊 Part 2: Prepare Your Google Sheet</h3>
+                    
+                    <h3>Step 1: Open or Create Your Google Sheet</h3>
+                    <ol>
+                        <li>Go to <a href="https://sheets.google.com" target="_blank"><strong>sheets.google.com</strong></a></li>
+                        <li>Open your existing spreadsheet or create a new one</li>
+                        <li>Note the <strong>sheet tab name</strong> at the bottom (e.g., "Sheet1", "My Data", "Import")</li>
+                    </ol>
+                    
+                    <h3>Step 2: Get the Spreadsheet URL or ID</h3>
+                    <ol>
+                        <li>Look at your browser's address bar</li>
+                        <li>The URL looks like: <code>https://docs.google.com/spreadsheets/d/ABC123xyz789/edit</code></li>
+                        <li>The part between <code>/d/</code> and <code>/edit</code> is your <strong>Spreadsheet ID</strong></li>
+                        <li>You can copy either the full URL or just the ID — the app accepts both!</li>
+                    </ol>
+                    <p><em>Note: With this Web App method, your sheet remains private! Only the script (running as you) can access it.</em></p>
+                    
+                    <h3>🚀 Part 3: Using the Sheets Sync Feature</h3>
+                    
+                    <h3>Step 1: Enter Web App URL</h3>
+                    <ol>
+                        <li>Go to the <strong>"Sheets Sync"</strong> tab in this app.</li>
+                        <li>Paste your <strong>Google Apps Script Web App URL</strong> into the green input box.</li>
+                    </ol>
+                    
+                    <h3>Step 2: Configure & Sync</h3>
+                    <ol>
+                        <li>Enter your <strong>Google Sheets URL or ID</strong> in the next field.</li>
+                        <li>Enter the <strong>Sheet Name</strong> (tab name) exactly as it appears.</li>
+                        <li>Upload your Excel file and map the columns.</li>
+                        <li>Click <strong>"🚀 Sync to Google Sheets"</strong>.</li>
+                    </ol>
+                    
+                    <h3>❓ Troubleshooting Common Issues</h3>
+                    
+                    <p><strong>Error: "Invalid URL" or Sync fails immediately</strong></p>
+                    <ul>
+                        <li>Make sure the URL starts with <code>https://script.google.com/macros/s/...</code></li>
+                        <li>Ensure it ends with <code>/exec</code> (not /dev).</li>
+                        <li>Did you deploy as "Who has access: <strong>Anyone</strong>"? This is required.</li>
+                    </ul>
+                    
+                    <p><strong>Error: "Sheet not found"</strong></p>
+                    <ul>
+                        <li>Verify the sheet tab name matches exactly (case-sensitive!).</li>
+                        <li>Check for extra spaces in the name (e.g., "Sheet1 " vs "Sheet1").</li>
+                    </ul>
+                    
+                    <p><strong>Data not appearing?</strong></p>
+                    <ul>
+                        <li>Check if you have "Overwrite" selected (this clears previous data).</li>
+                        <li>If "Append", scroll down to find the new rows.</li>
+                    </ul>
+                    
+                    <p><strong>Data appears in wrong columns</strong></p>
+                    <ul>
+                        <li>Double-check your column letter mappings</li>
+                        <li>Remember: A=1, B=2, C=3, etc.</li>
+                        <li>Column letters are case-insensitive (a = A)</li>
+                    </ul>
+                    
+                    <h3>💡 Pro Tips</h3>
+                    <ul>
+                        <li>Save your Web App URL in a secure place — you'll need it each time</li>
+                        <li>The Web App URL acts like a password for writing to your sheet, so don't share it publicly</li>
+                        <li>Test with a small Excel file first before syncing large datasets</li>
+                        <li>The app skips the first row of Excel (assumes it's a header row)</li>
+                        <li>Empty cells in Excel are transferred as empty cells in Google Sheets</li>
+                        <li>You can sync to any column position — they don't need to be consecutive</li>
+                    </ul>
                 `
             },
 
@@ -1101,8 +1702,10 @@ Best regards</textarea>
         let inputHandle2 = null;
         let outputHandle2 = null;
         let excelFiles2 = [];
+        let useFallbackMode2 = false; // Tracks if we are using the fallback (no FS API)
 
         const selectInput2 = document.getElementById('selectInput2');
+        const fallbackInput2 = document.getElementById('fallbackInput2');
         const inputFolder2 = document.getElementById('inputFolder2');
         const fileList2 = document.getElementById('fileList2');
         const emailConfig2 = document.getElementById('emailConfig2');
@@ -1117,24 +1720,67 @@ Best regards</textarea>
         const status2 = document.getElementById('status2');
 
         selectInput2.addEventListener('click', selectInputFolder2);
+        fallbackInput2.addEventListener('change', handleFallbackFiles2);
         selectOutput2.addEventListener('click', selectOutputFolder2);
         generate2.addEventListener('click', generateEmails2);
 
         emailColumn2.addEventListener('change', () => {
-            if (emailColumn2.value !== '' && outputHandle2) {
-                generate2.disabled = false;
+            if (emailColumn2.value !== '') {
+                // In fallback mode, we don't need output handle immediately (will zip)
+                if (useFallbackMode2 || outputHandle2) {
+                    generate2.disabled = false;
+                }
             }
         });
 
         async function selectInputFolder2() {
-            try {
-                inputHandle2 = await window.showDirectoryPicker();
-                inputFolder2.textContent = `✓ Selected: ${inputHandle2.name}`;
-                await loadExcelFiles2();
-            } catch (error) {
-                if (error.name !== 'AbortError') {
-                    showStatus2('Error selecting folder: ' + error.message, 'error');
+            // Reset fallback mode
+            useFallbackMode2 = false;
+
+            if ('showDirectoryPicker' in window) {
+                try {
+                    inputHandle2 = await window.showDirectoryPicker();
+                    inputFolder2.textContent = `✓ Selected: ${inputHandle2.name}`;
+                    await loadExcelFiles2();
+                } catch (error) {
+                    if (error.name === 'AbortError') return;
+                    // If some other error or user cancels, or restricted?
+                    // Fallback to input click if it seems like a permission/support issue?
+                    // Usually AbortError is just cancel. 
+                    // Let's assume explicit error means "try fallback" or show error.
+                    // For now, if showDirectoryPicker fails/user denies, we could suggest fallback.
+                    // But simpler: just try-catch and if error is not abort, maybe fallback?
+                    // Actually, safest is: if API exists, try it. If it throws "SecurityError" etc, try fallback.
+                    console.warn("Directory Picker failed/cancelled, checking legacy input...", error);
+                    // Force fallback if error was not abort? 
+                    // Let's just encourage user to use the fallback if they prefer.
+                    // Actually, improving robustness: prompt user? 
+                    // No, let's keep it simple: If API calls fail, we can't easily auto-switch to file input click (trusted event).
+                    // We'll rely on the user. 
+                    // WAIT: User said "work pc where there might be some permission issues".
+                    // Code below handles the flow where we switch to fallback if desired.
+                    fallbackInput2.click();
                 }
+            } else {
+                // API not supported
+                fallbackInput2.click();
+            }
+        }
+
+        function handleFallbackFiles2(e) {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) {
+                useFallbackMode2 = true;
+                inputFolder2.textContent = `✓ Selected: ${files.length} file(s)`;
+
+                // Wrap files to look like handles
+                excelFiles2 = files.map(f => ({
+                    kind: 'file',
+                    name: f.name,
+                    getFile: async () => f
+                }));
+
+                processLoadedFiles2();
             }
         }
 
@@ -1146,25 +1792,46 @@ Best regards</textarea>
                 for await (const entry of inputHandle2.values()) {
                     if (entry.kind === 'file' && entry.name.endsWith('.xlsx')) {
                         excelFiles2.push(entry);
-                        const fileItem = document.createElement('div');
-                        fileItem.className = 'file-item';
-                        fileItem.textContent = `📄 ${entry.name}`;
-                        fileList2.appendChild(fileItem);
                     }
                 }
-
-                if (excelFiles2.length === 0) {
-                    showStatus2('No Excel files found in the selected folder', 'error');
-                    return;
-                }
-
-                showStatus2(`Found ${excelFiles2.length} Excel file(s)`, 'success');
-                await loadColumnNames2();
-                emailConfig2.classList.remove('hidden');
-                outputSection2.classList.remove('hidden');
-                generate2.classList.remove('hidden');
+                processLoadedFiles2();
             } catch (error) {
                 showStatus2('Error reading folder: ' + error.message, 'error');
+                // Try fallback?
+                fallbackInput2.click();
+            }
+        }
+
+        async function processLoadedFiles2() {
+            fileList2.innerHTML = '';
+
+            // Sort alphabetically
+            excelFiles2.sort((a, b) => a.name.localeCompare(b.name));
+
+            if (excelFiles2.length === 0) {
+                showStatus2('No Excel files found', 'error');
+                return;
+            }
+
+            excelFiles2.forEach(entry => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.textContent = `📄 ${entry.name}`;
+                fileList2.appendChild(fileItem);
+            });
+
+            showStatus2(`Found ${excelFiles2.length} Excel file(s)`, 'success');
+            await loadColumnNames2();
+            emailConfig2.classList.remove('hidden');
+            outputSection2.classList.remove('hidden');
+            generate2.classList.remove('hidden');
+
+            // Adjust UI for fallback
+            if (useFallbackMode2) {
+                const outBtn = document.getElementById('selectOutput2');
+                outBtn.textContent = "(Optional) Select Output Folder";
+                // Update help text
+                document.getElementById('outputFolder2').innerHTML = "<em>If no folder selected, files will download as ZIP.</em>";
             }
         }
 
@@ -1204,6 +1871,12 @@ Best regards</textarea>
                 if (error.name !== 'AbortError') {
                     showStatus2('Error selecting output folder: ' + error.message, 'error');
                 }
+                // If fallback mode, we can proceed without output folder (Zip mode)
+                if (useFallbackMode2) {
+                    if (emailColumn2.value !== '') {
+                        generate2.disabled = false;
+                    }
+                }
             }
         }
 
@@ -1215,13 +1888,18 @@ Best regards</textarea>
                 return;
             }
 
-            if (!outputHandle2) {
-                showStatus2('Please select an output folder', 'error');
-                return;
+            if (!outputHandle2 && !useFallbackMode2) {
+                // In normal mode, require folder. In fallback, we'll zip.
+                // Actually, let's allow Zip even in normal mode if no folder selected?
+                // For now, strict check unless fallback mode, or just ask user?
+                // Let's assume if handle is null, do zip.
             }
 
+            // If no output handle, we defaults to ZIP
+            const isZipMode = !outputHandle2;
+
             generate2.disabled = true;
-            showStatus2('Generating email files...', 'info');
+            showStatus2(isZipMode ? 'Generating ZIP...' : 'Generating email files...', 'info');
             progress2.classList.add('show');
 
             try {
@@ -1229,6 +1907,8 @@ Best regards</textarea>
                 const subject = document.getElementById('emailSubject2').value || 'Report';
                 const body = document.getElementById('emailBody2').value || '';
                 const cc = document.getElementById('ccEmail2').value || '';
+
+                const zip = isZipMode ? new JSZip() : null;
 
                 for (const fileEntry of excelFiles2) {
                     const file = await fileEntry.getFile();
@@ -1267,10 +1947,14 @@ Best regards</textarea>
                         file.name
                     );
 
-                    const emlFileHandle = await outputHandle2.getFileHandle(emailFileName, { create: true });
-                    const writable = await emlFileHandle.createWritable();
-                    await writable.write(emlContent);
-                    await writable.close();
+                    if (isZipMode) {
+                        zip.file(emailFileName, emlContent);
+                    } else {
+                        const emlFileHandle = await outputHandle2.getFileHandle(emailFileName, { create: true });
+                        const writable = await emlFileHandle.createWritable();
+                        await writable.write(emlContent);
+                        await writable.close();
+                    }
 
                     processed++;
                     const percent = Math.round((processed / excelFiles2.length) * 100);
@@ -1278,7 +1962,16 @@ Best regards</textarea>
                     progressFill2.textContent = percent + '%';
                 }
 
-                showStatus2(`✓ Successfully created ${processed} email file(s)`, 'success');
+                if (isZipMode && processed > 0) {
+                    showStatus2('Zipping files...', 'info');
+                    const zipBlob = await zip.generateAsync({ type: 'blob' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(zipBlob);
+                    link.download = 'generated_emails.zip';
+                    link.click();
+                }
+
+                showStatus2(`✓ Successfully created ${processed} email file(s)${isZipMode ? ' (ZIP)' : ''}`, 'success');
                 progress2.classList.remove('show');
             } catch (error) {
                 showStatus2('Error generating emails: ' + error.message, 'error');
@@ -1339,6 +2032,371 @@ Best regards</textarea>
         function showStatus2(message, type) {
             status2.textContent = message;
             status2.className = 'status show ' + type;
+        }
+
+        // ============= TAB 4: GOOGLE SHEETS SYNC =============
+        let workbook4 = null;
+        let data4 = null;
+        let headers4 = [];
+        let columnMappings4 = [];
+
+        // DOM Elements
+        const uploadArea4 = document.getElementById('uploadArea4');
+        const fileInput4 = document.getElementById('fileInput4');
+        const fileInfo4 = document.getElementById('fileInfo4');
+        const fileName4 = document.getElementById('fileName4');
+        const fileDetails4 = document.getElementById('fileDetails4');
+        const modeSection4 = document.getElementById('modeSection4');
+        const mappingSection4 = document.getElementById('mappingSection4');
+        const mappingRows4 = document.getElementById('mappingRows4');
+        const addMapping4 = document.getElementById('addMapping4');
+        const syncBtn4 = document.getElementById('syncBtn4');
+        const progress4 = document.getElementById('progress4');
+        const progressFill4 = document.getElementById('progressFill4');
+        const status4 = document.getElementById('status4');
+        const webAppUrl4 = document.getElementById('webAppUrl4');
+        const sheetsUrl4 = document.getElementById('sheetsUrl4');
+        const sheetName4 = document.getElementById('sheetName4');
+        const startRow4 = document.getElementById('startRow4');
+
+        // Radio button styling
+        document.querySelectorAll('input[name="importMode4"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
+                e.target.closest('.radio-option').classList.add('selected');
+            });
+        });
+
+        // Load saved settings from localStorage
+        window.addEventListener('load', () => {
+            const savedWebAppUrl = localStorage.getItem('eve_webAppUrl');
+            const savedSheetsUrl = localStorage.getItem('eve_sheetsUrl');
+            const savedSheetName = localStorage.getItem('eve_sheetName');
+
+            if (savedWebAppUrl) webAppUrl4.value = savedWebAppUrl;
+            if (savedSheetsUrl) sheetsUrl4.value = savedSheetsUrl;
+            if (savedSheetName) sheetName4.value = savedSheetName;
+        });
+
+        // File upload handlers
+        uploadArea4.addEventListener('click', () => fileInput4.click());
+
+        uploadArea4.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea4.classList.add('dragover');
+        });
+
+        uploadArea4.addEventListener('dragleave', () => {
+            uploadArea4.classList.remove('dragover');
+        });
+
+        uploadArea4.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea4.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                handleFile4(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput4.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile4(e.target.files[0]);
+            }
+        });
+
+        function handleFile4(file) {
+            if (!file.name.endsWith('.xlsx')) {
+                showStatus4('Please select an Excel file (.xlsx)', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    workbook4 = XLSX.read(e.target.result, { type: 'binary' });
+                    const sheetName = workbook4.SheetNames[0];
+                    const worksheet = workbook4.Sheets[sheetName];
+
+                    // Get the actual range of the worksheet to find all columns
+                    const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+                    const totalColumns = range.e.c + 1; // End column index + 1
+
+                    // Read data with defval to preserve empty cells
+                    data4 = XLSX.utils.sheet_to_json(worksheet, {
+                        header: 1,
+                        defval: '',  // Use empty string for empty cells
+                        blankrows: true  // Include blank rows
+                    });
+
+                    if (data4.length === 0) {
+                        showStatus4('The Excel file is empty!', 'error');
+                        return;
+                    }
+
+                    // Get headers from first row, ensuring we have all columns
+                    const firstRow = data4[0] || [];
+                    headers4 = [];
+
+                    // Create headers array with proper length, filling in missing headers
+                    for (let i = 0; i < totalColumns; i++) {
+                        headers4[i] = firstRow[i] !== undefined && firstRow[i] !== ''
+                            ? firstRow[i]
+                            : `(Column ${getColumnLetter(i)})`;
+                    }
+
+                    fileName4.textContent = file.name;
+                    fileDetails4.textContent = `${data4.length - 1} rows, ${totalColumns} columns (A to ${getColumnLetter(totalColumns - 1)})`;
+                    fileInfo4.classList.add('show');
+
+                    // Show configuration sections
+                    modeSection4.classList.remove('hidden');
+                    mappingSection4.classList.remove('hidden');
+                    syncBtn4.classList.remove('hidden');
+
+                    // Clear previous mappings and add one default mapping
+                    mappingRows4.innerHTML = '';
+                    columnMappings4 = [];
+                    addMappingRow4();
+
+                    showStatus4(`Excel file loaded! Found ${totalColumns} columns (A to ${getColumnLetter(totalColumns - 1)}). Configure column mappings below.`, 'success');
+                } catch (error) {
+                    showStatus4('Error reading file: ' + error.message, 'error');
+                }
+            };
+            reader.readAsBinaryString(file);
+        }
+
+        // Add mapping button handler
+        addMapping4.addEventListener('click', addMappingRow4);
+
+        function addMappingRow4() {
+            const rowIndex = columnMappings4.length;
+            const mappingId = 'mapping_' + Date.now() + '_' + rowIndex;
+
+            columnMappings4.push({ excelCol: 0, sheetsCol: 'A' });
+
+            const row = document.createElement('div');
+            row.className = 'mapping-row';
+            row.id = mappingId;
+
+            // Build options using DOM to properly escape text
+            const selectEl = document.createElement('select');
+            selectEl.className = 'excel-select';
+            selectEl.onchange = function () { updateMapping4(mappingId, 'excel', this.value); };
+
+            headers4.forEach((header, index) => {
+                const colLetter = getColumnLetter(index);
+                const option = document.createElement('option');
+                option.value = index;
+                // Sanitize header: convert to string, trim, remove newlines/special chars
+                let headerText = String(header || '').trim();
+                headerText = headerText.replace(/[\r\n\t]+/g, ' '); // Replace newlines/tabs with space
+                headerText = headerText.replace(/\s+/g, ' '); // Collapse multiple spaces
+                if (!headerText) {
+                    headerText = '(empty)';
+                }
+                option.textContent = `${colLetter}: ${headerText}`;
+                selectEl.appendChild(option);
+            });
+
+            // Build the row structure using DOM manipulation
+            const excelColDiv = document.createElement('div');
+            excelColDiv.className = 'excel-col';
+            excelColDiv.appendChild(selectEl);
+
+            const arrowDiv = document.createElement('div');
+            arrowDiv.className = 'arrow';
+            arrowDiv.textContent = '→';
+
+            const sheetsInput = document.createElement('input');
+            sheetsInput.type = 'text';
+            sheetsInput.className = 'column-letter-input sheets-input';
+            sheetsInput.value = getColumnLetter(rowIndex);
+            sheetsInput.placeholder = 'A';
+            sheetsInput.maxLength = 3;
+            sheetsInput.onchange = function () { updateMapping4(mappingId, 'sheets', this.value); };
+
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-mapping';
+            removeBtn.textContent = '✕';
+            removeBtn.onclick = function () { removeMappingRow4(mappingId); };
+
+            row.appendChild(excelColDiv);
+            row.appendChild(arrowDiv);
+            row.appendChild(sheetsInput);
+            row.appendChild(removeBtn);
+
+            mappingRows4.appendChild(row);
+            columnMappings4[columnMappings4.length - 1].sheetsCol = getColumnLetter(rowIndex);
+        }
+
+        function updateMapping4(mappingId, type, value) {
+            const rows = Array.from(mappingRows4.children);
+            const index = rows.findIndex(r => r.id === mappingId);
+            if (index !== -1) {
+                if (type === 'excel') {
+                    columnMappings4[index].excelCol = parseInt(value);
+                } else {
+                    columnMappings4[index].sheetsCol = value.toUpperCase();
+                }
+            }
+        }
+
+        function removeMappingRow4(mappingId) {
+            const rows = Array.from(mappingRows4.children);
+            const index = rows.findIndex(r => r.id === mappingId);
+            if (index !== -1) {
+                rows[index].remove();
+                columnMappings4.splice(index, 1);
+            }
+        }
+
+        function getColumnLetter(index) {
+            let letter = '';
+            while (index >= 0) {
+                letter = String.fromCharCode((index % 26) + 65) + letter;
+                index = Math.floor(index / 26) - 1;
+            }
+            return letter;
+        }
+
+        function columnLetterToIndex(letter) {
+            let index = 0;
+            for (let i = 0; i < letter.length; i++) {
+                index = index * 26 + letter.charCodeAt(i) - 64;
+            }
+            return index - 1;
+        }
+
+        function extractSpreadsheetId(input) {
+            // Handle full URLs
+            const urlMatch = input.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+            if (urlMatch) {
+                return urlMatch[1];
+            }
+            // Assume it's already an ID
+            return input.trim();
+        }
+
+        // Sync button handler
+        syncBtn4.addEventListener('click', syncToGoogleSheets);
+
+        async function syncToGoogleSheets() {
+            const webAppUrl = webAppUrl4.value.trim();
+            const sheetsInput = sheetsUrl4.value.trim();
+            const targetSheetName = sheetName4.value.trim() || 'Sheet1';
+            const importMode = document.querySelector('input[name="importMode4"]:checked').value;
+            const customStartRow = startRow4.value.trim();
+
+            // Validation
+            if (!webAppUrl) {
+                showStatus4('Please enter your Google Apps Script Web App URL', 'error');
+                return;
+            }
+
+            if (!webAppUrl.includes('script.google.com')) {
+                showStatus4('Invalid URL. The URL should start with https://script.google.com/...', 'error');
+                return;
+            }
+
+            if (!sheetsInput) {
+                showStatus4('Please enter the Google Sheets URL or ID', 'error');
+                return;
+            }
+
+            if (columnMappings4.length === 0) {
+                showStatus4('Please add at least one column mapping', 'error');
+                return;
+            }
+
+            const spreadsheetId = extractSpreadsheetId(sheetsInput);
+
+            syncBtn4.disabled = true;
+            showStatus4('Preparing data...', 'info');
+            progress4.classList.add('show');
+            progressFill4.style.width = '10%';
+            progressFill4.textContent = '10%';
+
+            try {
+                // Prepare data based on mappings
+                // If overwrite, send headers too. If append, slice headers.
+                const dataRows = (importMode === 'overwrite') ? data4 : data4.slice(1);
+
+                // Create column mapping info for the Apps Script
+                const mappings = columnMappings4.map(m => ({
+                    excelCol: m.excelCol,
+                    sheetsCol: m.sheetsCol
+                }));
+
+                // Prepare the data to send
+                const payload = {
+                    spreadsheetId: spreadsheetId,
+                    sheetName: targetSheetName,
+                    mode: importMode,
+                    startRow: customStartRow ? parseInt(customStartRow) : null,
+                    mappings: mappings,
+                    data: dataRows
+                };
+
+                // Warn about large data size
+                if (dataRows.length > 5000) {
+                    const proceed = confirm(`⚠️ Large Dataset Detected (${dataRows.length} rows)\n\nGoogle Apps Script may timeout with this much data (>5000 rows). It's recommended to split your data or sync in smaller batches.\n\nDo you want to try anyway?`);
+                    if (!proceed) {
+                        syncBtn4.disabled = false;
+                        progress4.classList.remove('show');
+                        return;
+                    }
+                }
+
+                progressFill4.style.width = '30%';
+                progressFill4.textContent = '30%';
+                showStatus4('Sending data to Google Sheets...', 'info');
+
+                progressFill4.style.width = '50%';
+                progressFill4.textContent = '50%';
+
+                // Send data to the Web App
+                const response = await fetch(webAppUrl, {
+                    method: 'POST',
+                    mode: 'no-cors', // Required for Apps Script
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                progressFill4.style.width = '90%';
+                progressFill4.textContent = '90%';
+
+                // Note: with no-cors, we can't read the response, so we assume success
+                // The user can check the sheet to verify
+
+                progressFill4.style.width = '100%';
+                progressFill4.textContent = '100%';
+
+                showStatus4(`✓ Data sent to Google Sheets!\n\nPlease check your spreadsheet to verify the data was written correctly.\n\nSheet: ${targetSheetName}\nRows sent: ${dataRows.length}`, 'success');
+
+                // SAVE SETTINGS TO LOCAL STORAGE ON SUCCESS
+                localStorage.setItem('eve_webAppUrl', webAppUrl);
+                localStorage.setItem('eve_sheetsUrl', sheetsInput);
+                localStorage.setItem('eve_sheetName', targetSheetName);
+
+                setTimeout(() => {
+                    progress4.classList.remove('show');
+                }, 2000);
+
+            } catch (error) {
+                showStatus4('Error: ' + error.message, 'error');
+                progress4.classList.remove('show');
+            }
+
+            syncBtn4.disabled = false;
+        }
+
+        function showStatus4(message, type) {
+            status4.textContent = message;
+            status4.className = 'status show ' + type;
+            status4.style.whiteSpace = 'pre-line';
         }
     </script>
 </body>
