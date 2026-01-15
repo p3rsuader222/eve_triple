@@ -52,26 +52,40 @@
         }
 
         body {
-            background: url('images/background.png');
-            background-size: auto;
-            /* FIX: Tile instead of stretch */
-            background-position: top left;
-            background-repeat: repeat;
-            /* FIX: Tile */
-            background-attachment: fixed;
+            background-color: var(--bg-solid);
             min-height: 100vh;
             padding: 40px 20px;
             color: var(--text-main);
             display: flex;
             justify-content: center;
-            /* Center horizontally */
             align-items: flex-start;
-            /* Align top (better for scrolling) */
-            transition: background-color 0.4s ease;
+            position: relative;
+            transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Layered background for smooth transitions */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('images/background.png');
+            background-size: auto;
+            background-position: top left;
+            background-repeat: repeat;
+            background-attachment: fixed;
+            z-index: -1;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 1;
+        }
+
+        body.no-bg::before {
+            opacity: 0;
         }
 
         body.no-bg {
-            background-image: none !important;
             background-color: var(--bg-solid);
         }
 
@@ -190,8 +204,22 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
+        .bg-toggle-btn:active {
+            transform: translateY(1px) scale(0.96);
+            box-shadow: var(--shadow-sm);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
         .bg-toggle-btn .icon {
-            font-size: 16px;
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+
+        /* Compensate for the extra padding in the prohibition sign image */
+        .bg-toggle-btn .icon.large-scale {
+            transform: scale(1.3);
         }
 
         .header p {
@@ -1086,8 +1114,8 @@
     <div class="container" style="position: relative;">
         <div class="bg-toggle-container">
             <button class="bg-toggle-btn" id="bgToggle" title="Toggle Background">
-                <span class="icon">🖼️</span>
-                <span class="text">Background</span>
+                <img src="images/no_monkey_icon.png" alt="Toggle" class="icon large-scale">
+                <span class="text">Hide monkeys!</span>
             </button>
         </div>
         <div class="header">
@@ -1907,10 +1935,12 @@ function reply(obj) {
             const text = btn.querySelector('.text');
 
             if (isHidden) {
-                icon.textContent = '🎨';
+                icon.src = 'images/favicon_munke.png';
+                icon.classList.remove('large-scale');
                 text.textContent = 'Show monkeys!';
             } else {
-                icon.textContent = '🖼️';
+                icon.src = 'images/no_monkey_icon.png';
+                icon.classList.add('large-scale');
                 text.textContent = 'Hide monkeys!';
             }
         }
