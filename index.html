@@ -108,6 +108,26 @@
             background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .header-mascot {
+            height: 120px;
+            /* Significantly larger */
+            width: auto;
+            -webkit-text-fill-color: initial;
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.15));
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-bottom: 10px;
+            mix-blend-mode: multiply;
+            /* Blend away the white background */
+        }
+
+        .header h1:hover .header-mascot {
+            transform: scale(1.1) rotate(5deg);
         }
 
         .header p {
@@ -1001,7 +1021,10 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 Excel Workflow Suite</h1>
+            <h1>
+                <span>📊 Excel Workflow Suite</span>
+                <img src="images/clean_monkey.png" alt="Mascot" class="header-mascot">
+            </h1>
             <p>Split Excel files by criteria and generate email drafts</p>
         </div>
 
