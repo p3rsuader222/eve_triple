@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MUNKE</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon_munke.png">
+    <link rel="shortcut icon" type="image/png" href="images/favicon_munke.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://apis.google.com/js/api.js"></script>
@@ -123,6 +125,23 @@
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             margin-bottom: 10px;
             /* No blend mode needed as the PNG is truly transparent */
+        }
+
+        .title-icon {
+            height: 120px;
+            /* Match main mascot height */
+            width: auto;
+            vertical-align: middle;
+            margin-right: 15px;
+            margin-top: -10px;
+            -webkit-text-fill-color: initial;
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1));
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .header h1:hover .title-icon {
+            transform: scale(1.1) rotate(-5deg);
+            /* Rotates opposite to the mascot for a "blooming" effect */
         }
 
         .header h1:hover .header-mascot {
@@ -1021,7 +1040,7 @@
     <div class="container">
         <div class="header">
             <h1>
-                <span>📊 Evelinos Suite v4</span>
+                <span><img src="images/leftie_removed_bg.png" alt="Icon" class="title-icon">Evelinos Suite v4</span>
                 <img src="images/clean_monkey-removebg-preview.png" alt="Mascot" class="header-mascot">
             </h1>
             <p>Split Excel files by criteria and generate email drafts</p>
