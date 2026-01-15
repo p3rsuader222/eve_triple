@@ -35,6 +35,8 @@
             --radius-md: 20px;
             --radius-sm: 12px;
             --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --bg-solid: #F5F5F7;
+            /* Apple Soft Neutral Gray */
         }
 
         * {
@@ -65,6 +67,12 @@
             /* Center horizontally */
             align-items: flex-start;
             /* Align top (better for scrolling) */
+            transition: background-color 0.4s ease;
+        }
+
+        body.no-bg {
+            background-image: none !important;
+            background-color: var(--bg-solid);
         }
 
         .container {
@@ -146,6 +154,44 @@
 
         .header h1:hover .header-mascot {
             transform: scale(1.1) rotate(5deg);
+        }
+
+        .bg-toggle-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .bg-toggle-btn {
+            background: var(--surface-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-light);
+            padding: 8px 14px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .bg-toggle-btn:hover {
+            background: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .bg-toggle-btn .icon {
+            font-size: 16px;
         }
 
         .header p {
@@ -1037,7 +1083,13 @@
 </head>
 
 <body>
-    <div class="container">
+    <div class="container" style="position: relative;">
+        <div class="bg-toggle-container">
+            <button class="bg-toggle-btn" id="bgToggle" title="Toggle Background">
+                <span class="icon">🖼️</span>
+                <span class="text">Background</span>
+            </button>
+        </div>
         <div class="header">
             <h1>
                 <span><img src="images/leftie_removed_bg.png" alt="Icon" class="title-icon">Evelinos Suite v4</span>
@@ -1842,9 +1894,39 @@ function reply(obj) {
             });
         }
 
-        // Knowledge Base Search
+        // Background Toggle Logic
+        function toggleBackground() {
+            const isHidden = document.body.classList.toggle('no-bg');
+            localStorage.setItem('eve_bg_hidden', isHidden);
+            updateToggleUI(isHidden);
+        }
+
+        function updateToggleUI(isHidden) {
+            const btn = document.getElementById('bgToggle');
+            const icon = btn.querySelector('.icon');
+            const text = btn.querySelector('.text');
+
+            if (isHidden) {
+                icon.textContent = '🎨';
+                text.textContent = 'Show monkeys!';
+            } else {
+                icon.textContent = '🖼️';
+                text.textContent = 'Hide monkeys!';
+            }
+        }
+
+        // Initialize Everything
         document.addEventListener('DOMContentLoaded', () => {
             renderKnowledgeBase();
+
+            // Init Background
+            const bgHidden = localStorage.getItem('eve_bg_hidden') === 'true';
+            if (bgHidden) {
+                document.body.classList.add('no-bg');
+            }
+            updateToggleUI(bgHidden);
+
+            document.getElementById('bgToggle').addEventListener('click', toggleBackground);
 
             const searchInput = document.getElementById('kbSearch');
             searchInput.addEventListener('input', (e) => {
