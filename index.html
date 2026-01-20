@@ -2148,6 +2148,14 @@ function reply(obj) {
         }
 
         async function selectOutputFolder1() {
+            if (!('showDirectoryPicker' in window)) {
+                showStatus1('Folder selection is not supported in this browser. Use ZIP mode instead.', 'warning');
+                buttonGroup1.classList.remove('hidden');
+                processFolder1.style.display = 'none';
+                processZip1.style.display = 'block';
+                return;
+            }
+
             try {
                 outputHandle1 = await window.showDirectoryPicker();
                 folderName1.textContent = `✓ Selected: ${outputHandle1.name}`;
@@ -2156,7 +2164,10 @@ function reply(obj) {
                 processZip1.style.display = 'block';
             } catch (error) {
                 if (error.name !== 'AbortError') {
-                    showStatus1('Error selecting folder: ' + error.message, 'error');
+                    showStatus1('Folder selection unavailable. Use ZIP mode instead. (' + error.message + ')', 'warning');
+                    buttonGroup1.classList.remove('hidden');
+                    processFolder1.style.display = 'none';
+                    processZip1.style.display = 'block';
                 }
             }
         }
@@ -2460,6 +2471,19 @@ function reply(obj) {
         }
 
         async function selectOutputFolder2() {
+            if (!('showDirectoryPicker' in window)) {
+                useFallbackMode2 = true;
+                outputHandle2 = null;
+                const outBtn = document.getElementById('selectOutput2');
+                outBtn.textContent = "(Optional) Select Output Folder";
+                outputFolder2.innerHTML = "<em>Folder selection is not supported. Files will download as ZIP.</em>";
+                showStatus2('Folder selection is not supported. ZIP mode will be used.', 'warning');
+                if (emailColumn2.value !== '') {
+                    generate2.disabled = false;
+                }
+                return;
+            }
+
             try {
                 outputHandle2 = await window.showDirectoryPicker();
                 outputFolder2.textContent = `✓ Selected: ${outputHandle2.name}`;
@@ -2468,7 +2492,12 @@ function reply(obj) {
                 }
             } catch (error) {
                 if (error.name !== 'AbortError') {
-                    showStatus2('Error selecting output folder: ' + error.message, 'error');
+                    useFallbackMode2 = true;
+                    outputHandle2 = null;
+                    const outBtn = document.getElementById('selectOutput2');
+                    outBtn.textContent = "(Optional) Select Output Folder";
+                    outputFolder2.innerHTML = "<em>Folder selection is unavailable. Files will download as ZIP.</em>";
+                    showStatus2('Folder selection unavailable. ZIP mode will be used. (' + error.message + ')', 'warning');
                 }
                 // If fallback mode, we can proceed without output folder (Zip mode)
                 if (useFallbackMode2) {
@@ -2503,6 +2532,8 @@ function reply(obj) {
 
             try {
                 let processed = 0;
+                let filesProcessed = 0;
+                let skippedFiles = 0;
                 const subject = document.getElementById('emailSubject2').value || 'Report';
                 const body = document.getElementById('emailBody2').value || '';
                 const cc = document.getElementById('ccEmail2').value || '';
@@ -2528,6 +2559,11 @@ function reply(obj) {
 
                     if (uniqueEmails.length === 0) {
                         console.warn(`No valid emails found in ${file.name}`);
+                        skippedFiles++;
+                        filesProcessed++;
+                        const percent = Math.round((filesProcessed / excelFiles2.length) * 100);
+                        progressFill2.style.width = percent + '%';
+                        progressFill2.textContent = percent + '%';
                         continue;
                     }
 
@@ -2556,7 +2592,8 @@ function reply(obj) {
                     }
 
                     processed++;
-                    const percent = Math.round((processed / excelFiles2.length) * 100);
+                    filesProcessed++;
+                    const percent = Math.round((filesProcessed / excelFiles2.length) * 100);
                     progressFill2.style.width = percent + '%';
                     progressFill2.textContent = percent + '%';
                 }
@@ -2570,7 +2607,11 @@ function reply(obj) {
                     link.click();
                 }
 
-                showStatus2(`✓ Successfully created ${processed} email file(s)${isZipMode ? ' (ZIP)' : ''}`, 'success');
+                let message = `✓ Successfully created ${processed} email file(s)${isZipMode ? ' (ZIP)' : ''}`;
+                if (skippedFiles > 0) {
+                    message += ` (${skippedFiles} file(s) skipped due to missing emails)`;
+                }
+                showStatus2(message, 'success');
                 progress2.classList.remove('show');
             } catch (error) {
                 showStatus2('Error generating emails: ' + error.message, 'error');
