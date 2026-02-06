@@ -7,10 +7,6 @@
     <title>MUNKE</title>
     <link rel="icon" type="image/png" sizes="32x32" href="images/favicon_munke.png">
     <link rel="shortcut icon" type="image/png" href="images/favicon_munke.png">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://apis.google.com/js/api.js"></script>
-    <script src="https://accounts.google.com/gsi/client"></script>
     <style>
         :root {
             --primary: #007AFF;
@@ -405,6 +401,20 @@
         textarea {
             min-height: 120px;
             resize: vertical;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 6px 0 20px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .checkbox-row input[type="checkbox"] {
+            width: auto;
+            margin: 0;
         }
 
         /* Buttons */
@@ -1156,8 +1166,20 @@
                 <div class="upload-area" id="uploadArea1">
                     <div class="upload-icon">📂</div>
                     <p style="margin-bottom: 10px; color: #666;"><strong>Click to upload</strong> or drag and drop</p>
-                    <p style="font-size: 14px; color: #999;">Excel files (.xlsx) only</p>
-                    <input type="file" id="fileInput1" accept=".xlsx">
+                    <p style="font-size: 14px; color: #999;">Excel files (.xlsx) or CSV in CSV mode</p>
+                    <input type="file" id="fileInput1" accept=".xlsx,.XLSX">
+                </div>
+                <div class="checkbox-row">
+                    <input type="checkbox" id="csvMode1">
+                    <label for="csvMode1">Use CSV mode for very large files (single sheet only)</label>
+                </div>
+                <div class="checkbox-row">
+                    <label for="csvDelimiter1">CSV delimiter:</label>
+                    <select id="csvDelimiter1" style="max-width: 220px;">
+                        <option value=",">Comma (,)</option>
+                        <option value=";">Semicolon (;)</option>
+                        <option value="\t">Tab</option>
+                    </select>
                 </div>
 
                 <div class="file-info" id="fileInfo1">
@@ -1187,6 +1209,10 @@
                     </p>
                     <button class="btn secondary" id="selectFolder1">Select Output Folder</button>
                     <div class="folder-info" id="folderName1"></div>
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="csvOutput1">
+                        <label for="csvOutput1">Output as CSV instead of XLSX</label>
+                    </div>
                 </div>
 
                 <div class="hidden" id="buttonGroup1">
@@ -1204,22 +1230,22 @@
                 <div class="status" id="status1"></div>
 
                 <div class="note">
-                    <strong>💡 Next Step:</strong> After splitting, switch to the "Generate Emails" tab to create email
-                    drafts for each file.
+                    <strong>💡 Next Step:</strong> After splitting, switch to the "Generate Emails" tab to create drafts for each file.
                 </div>
             </div>
 
             <!-- Tab 2: Email Generator -->
             <div class="tab-content" id="emailer">
                 <div class="info-box">
-                    <strong>Step 2:</strong> Generate Outlook email files from your split Excel files
+                    <strong>Step 2:</strong> Generate email draft files directly from your split Excel files
                 </div>
 
                 <div class="section">
                     <div class="section-title">📁 Select Excel Files Folder</div>
                     <button class="btn" id="selectInput2">Select Folder with Excel Files</button>
+                    <button class="btn secondary" id="fallbackBtn2">Choose Files (Fallback)</button>
                     <!-- Fallback file input -->
-                    <input type="file" id="fallbackInput2" multiple accept=".xlsx" style="display: none;">
+                    <input type="file" id="fallbackInput2" multiple accept=".xlsx,.XLSX" style="display: none;">
                     <div class="folder-info" id="inputFolder2"></div>
                     <div class="file-list" id="fileList2"></div>
                 </div>
@@ -1237,7 +1263,6 @@
 Please find the attached report.
 
 Best regards</textarea>
-
                     <label for="ccEmail2">CC (optional):</label>
                     <input type="email" id="ccEmail2" placeholder="cc@example.com">
 
@@ -1251,14 +1276,14 @@ Best regards</textarea>
 
                 <div class="section hidden" id="outputSection2">
                     <div class="section-title">💾 Select Output Folder</div>
-                    <button class="btn secondary" id="selectOutput2">Select Output Folder for Email Files</button>
+                    <button class="btn secondary" id="selectOutput2">Select Output Folder for Drafts</button>
                     <div class="folder-info" id="outputFolder2"></div>
                 </div>
 
-                <button class="btn success hidden" id="generate2">Generate Email Files</button>
+                <button class="btn success hidden" id="generate2">Generate Email Drafts</button>
 
                 <div class="progress" id="progress2">
-                    <p style="margin-bottom: 10px; color: #666;">Creating email files...</p>
+                    <p style="margin-bottom: 10px; color: #666;">Creating draft files...</p>
                     <div class="progress-bar">
                         <div class="progress-fill" id="progressFill2">0%</div>
                     </div>
@@ -1269,12 +1294,12 @@ Best regards</textarea>
                 <div class="note">
                     <strong>💡 Tips:</strong><br>
                     • Use {{filename}} in subject to include the Excel filename<br>
-                    • Email files (.eml) will open in Outlook when double-clicked<br>
-                    • All recipients from the Excel file will be in the "To:" field
+                    • Each source file produces one draft (.eml) with attachment<br>
+                    • You will confirm the full batch once before generation starts
                 </div>
             </div>
 
-            <!-- Tab 3: Google Sheets Sync -->
+            <!-- Tab 4: Google Sheets Sync -->
             <div class="tab-content" id="gsync">
                 <div class="info-box">
                     <strong>🔄 Excel to Google Sheets Sync:</strong> Import specific columns from Excel to your Google
@@ -1319,9 +1344,21 @@ Best regards</textarea>
                         <div class="upload-icon">📂</div>
                         <div style="flex-grow: 1;">
                             <p style="color: #334155; font-weight: 500;"><strong>Click to upload Excel file</strong></p>
-                            <p style="font-size: 13px; color: #64748b;">.xlsx files only</p>
+                            <p style="font-size: 13px; color: #64748b;">.xlsx files or CSV in CSV mode</p>
                         </div>
-                        <input type="file" id="fileInput4" accept=".xlsx">
+                        <input type="file" id="fileInput4" accept=".xlsx,.XLSX">
+                    </div>
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="csvMode4">
+                        <label for="csvMode4">Use CSV mode for very large files (single sheet only)</label>
+                    </div>
+                    <div class="checkbox-row">
+                        <label for="csvDelimiter4">CSV delimiter:</label>
+                        <select id="csvDelimiter4" style="max-width: 220px;">
+                            <option value=",">Comma (,)</option>
+                            <option value=";">Semicolon (;)</option>
+                            <option value="\t">Tab</option>
+                        </select>
                     </div>
 
                     <div class="file-info" id="fileInfo4" style="margin-top: 10px; margin-bottom: 0;">
@@ -1487,7 +1524,7 @@ Best regards</textarea>
                 title: "Excel Emailer — User Guide",
                 content: `
                     <h3>📋 Overview</h3>
-                    <p>The <strong>Excel Emailer</strong> (Tab 2) generates ready-to-send Outlook email files (<code>.eml</code>) for each Excel file in a folder. It's perfect for distributing the split reports you just created!</p>
+                    <p>The <strong>Excel Emailer</strong> (Tab 2) now generates ready-to-open <code>.eml</code> draft files directly from each Excel file, with the original workbook attached.</p>
 
                     <h3>📝 Step-by-Step Instructions</h3>
                     <ol>
@@ -1511,10 +1548,10 @@ Best regards</textarea>
                         </li>
                         <li><strong>Select Output:</strong> Choose a folder to save drafts.
                             <ul>
-                                <li><strong>⚠️ Fallback Mode:</strong> If you don't select a folder (or can't), the app will automatically zip all emails into a <code>generated_emails.zip</code> file for you to download.</li>
+                                <li><strong>⚠️ Fallback Mode:</strong> If you don't select a folder (or can't), the app will automatically zip all generated drafts into an <code>email_drafts.zip</code> file for you to download.</li>
                             </ul>
                         </li>
-                        <li><strong>Generate:</strong> Click <strong>Generate Emails</strong>.</li>
+                        <li><strong>Generate:</strong> Click <strong>Generate Email Drafts</strong>.</li>
                     </ol>
 
                     <h3>💡 Key Features</h3>
@@ -1930,7 +1967,7 @@ function reply(obj) {
         // Background Toggle Logic
         function toggleBackground() {
             const isHidden = document.body.classList.toggle('no-bg');
-            localStorage.setItem('eve_bg_hidden', isHidden);
+            safeStorage.setItem('eve_bg_hidden', isHidden);
             updateToggleUI(isHidden);
         }
 
@@ -1950,12 +1987,384 @@ function reply(obj) {
             }
         }
 
+        const XLSX_URLS = [
+            'vendor/xlsx.full.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'
+        ];
+        const JSZIP_URLS = [
+            'vendor/jszip.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'
+        ];
+
+        function loadScript(url) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = url;
+                script.async = true;
+                script.onload = () => resolve(url);
+                script.onerror = () => reject(new Error(`Failed to load ${url}`));
+                document.head.appendChild(script);
+            });
+        }
+
+        async function loadDependency(urls, globalName) {
+            if (window[globalName]) {
+                return true;
+            }
+            for (const url of urls) {
+                try {
+                    await loadScript(url);
+                    if (window[globalName]) {
+                        return true;
+                    }
+                } catch (error) {
+                    // Try next URL
+                }
+            }
+            throw new Error(`${globalName} failed to load. This network may block CDNs. Ask IT or add local vendor files.`);
+        }
+
+        let xlsxReady = null;
+        let jszipReady = null;
+
+        function ensureXlsx() {
+            if (!xlsxReady) {
+                xlsxReady = loadDependency(XLSX_URLS, 'XLSX');
+            }
+            return xlsxReady;
+        }
+
+        function ensureJsZip() {
+            if (!jszipReady) {
+                jszipReady = loadDependency(JSZIP_URLS, 'JSZip');
+            }
+            return jszipReady;
+        }
+
+        function yieldToUI() {
+            return new Promise(resolve => setTimeout(resolve, 0));
+        }
+
+        function isXlsxFile(fileName) {
+            return !!fileName && fileName.toLowerCase().endsWith('.xlsx');
+        }
+
+        function isCsvFile(fileName) {
+            return !!fileName && fileName.toLowerCase().endsWith('.csv');
+        }
+
+        function stripXlsxExtension(fileName) {
+            return fileName ? fileName.replace(/\.xlsx$/i, '') : '';
+        }
+
+        function formatFileSize(bytes) {
+            if (!Number.isFinite(bytes)) return '0 MB';
+            return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+        }
+
+        function normalizeHeaders(headers, colCount) {
+            const normalized = [];
+            for (let i = 0; i < colCount; i++) {
+                const header = headers && headers[i] !== undefined && headers[i] !== '' ? headers[i] : `(Column ${getColumnLetter(i)})`;
+                normalized[i] = header;
+            }
+            return normalized;
+        }
+
+        function escapeCsvField(value, delimiter) {
+            const text = value === null || value === undefined ? '' : String(value);
+            const needsQuotes = text.includes('"') || text.includes('\n') || text.includes('\r') || text.includes(delimiter);
+            if (!needsQuotes) return text;
+            return `"${text.replace(/"/g, '""')}"`;
+        }
+
+        function rowsToCsv(rows, delimiter) {
+            const delim = delimiter || ',';
+            const lines = rows.map(row => row.map(cell => escapeCsvField(cell, delim)).join(delim));
+            return lines.join('\r\n');
+        }
+
+        const HARD_LIMITS = {
+            splitterXlsx: { maxSizeMB: 80, maxRows: 1000000, maxCols: 50 },
+            splitterCsv: { maxSizeMB: 200, maxRows: 1000000, maxCols: 50 },
+            syncXlsx: { maxSizeMB: 80, maxRows: 1000000, maxCols: 50 },
+            syncCsv: { maxSizeMB: 200, maxRows: 1000000, maxCols: 50 }
+        };
+        const XLSX_MEMORY_RISK_MB = 75;
+
+        function checkHardLimits(kind, file, info) {
+            const limits = HARD_LIMITS[kind];
+            if (!limits || !file || !info) {
+                return { ok: true };
+            }
+            const errors = [];
+            const sizeMB = file.size / (1024 * 1024);
+            const dataRows = Math.max((info.rowCount || 0) - 1, 0);
+            const colCount = info.colCount || 0;
+
+            if (sizeMB > limits.maxSizeMB) {
+                errors.push(`File size ${sizeMB.toFixed(1)} MB exceeds ${limits.maxSizeMB} MB limit.`);
+            }
+            if (dataRows > limits.maxRows) {
+                errors.push(`Row count ${dataRows.toLocaleString()} exceeds ${limits.maxRows.toLocaleString()} rows.`);
+            }
+            if (colCount > limits.maxCols) {
+                errors.push(`Column count ${colCount} exceeds ${limits.maxCols} columns.`);
+            }
+
+            if (errors.length > 0) {
+                return {
+                    ok: false,
+                    message: `This file is above the supported limits:\n${errors.join('\n')}\n\nPlease reduce the file size or rows before continuing.`
+                };
+            }
+            return { ok: true };
+        }
+
+        function checkXlsxMemoryRisk(file, contextLabel) {
+            if (!file || !isXlsxFile(file.name)) {
+                return { ok: true };
+            }
+            const sizeMB = file.size / (1024 * 1024);
+            if (sizeMB <= XLSX_MEMORY_RISK_MB) {
+                return { ok: true };
+            }
+            return {
+                ok: false,
+                message:
+                    `${contextLabel}: "${file.name}" is ${sizeMB.toFixed(1)} MB.\n\n` +
+                    `XLSX files above ${XLSX_MEMORY_RISK_MB} MB have a high risk of browser memory failures.\n\n` +
+                    'Use CSV mode (if available), split the source file, or process smaller batches.'
+            };
+        }
+
+        async function parseCsvStream(file, delimiter, onRow, onProgress) {
+            const decoder = new TextDecoder('utf-8');
+            const delim = delimiter || ',';
+            let bytesRead = 0;
+            let row = [];
+            let field = '';
+            let inQuotes = false;
+            let pendingQuote = false;
+
+            const emitRow = async () => {
+                row.push(field);
+                field = '';
+                const rowData = row;
+                row = [];
+                if (onRow) {
+                    await onRow(rowData);
+                }
+            };
+
+            const processText = async (text) => {
+                for (let i = 0; i < text.length; i++) {
+                    let char = text[i];
+
+                    if (pendingQuote) {
+                        if (char === '"') {
+                            field += '"';
+                            pendingQuote = false;
+                            continue;
+                        }
+                        pendingQuote = false;
+                        inQuotes = false;
+                        // Reprocess this character as non-quoted
+                    }
+
+                    if (inQuotes) {
+                        if (char === '"') {
+                            if (i + 1 < text.length) {
+                                if (text[i + 1] === '"') {
+                                    field += '"';
+                                    i++;
+                                } else {
+                                    inQuotes = false;
+                                }
+                            } else {
+                                pendingQuote = true;
+                            }
+                        } else {
+                            field += char;
+                        }
+                        continue;
+                    }
+
+                    if (char === '"') {
+                        inQuotes = true;
+                    } else if (char === delim) {
+                        row.push(field);
+                        field = '';
+                    } else if (char === '\n') {
+                        await emitRow();
+                    } else if (char === '\r') {
+                        // Ignore
+                    } else {
+                        field += char;
+                    }
+                }
+            };
+
+            let reader = null;
+            if (file && typeof file.stream === 'function') {
+                const stream = file.stream();
+                reader = stream && stream.getReader ? stream.getReader() : null;
+            }
+
+            if (reader) {
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    bytesRead += value.length;
+                    const text = decoder.decode(value, { stream: true });
+                    await processText(text);
+                    if (onProgress) {
+                        onProgress(bytesRead, file.size);
+                    }
+                }
+                const tail = decoder.decode();
+                if (tail) {
+                    await processText(tail);
+                }
+            } else {
+                const text = await file.text();
+                bytesRead = text.length;
+                await processText(text);
+                if (onProgress) {
+                    onProgress(bytesRead, file.size);
+                }
+            }
+
+            if (pendingQuote) {
+                pendingQuote = false;
+                inQuotes = false;
+            }
+
+            if (field.length > 0 || row.length > 0) {
+                await emitRow();
+            }
+        }
+
+        async function scanCsvFile(file, delimiter, onProgress) {
+            let headers = [];
+            let rowCount = 0;
+            let colCount = 0;
+            let headerSet = false;
+
+            await parseCsvStream(
+                file,
+                delimiter,
+                async (row) => {
+                    if (!headerSet) {
+                        headers = row;
+                        headerSet = true;
+                        colCount = Math.max(colCount, row.length);
+                    } else {
+                        colCount = Math.max(colCount, row.length);
+                    }
+                    rowCount++;
+                },
+                onProgress
+            );
+
+            return { headers, rowCount, colCount };
+        }
+
+        const memoryStore = {};
+        const safeStorage = {
+            getItem(key) {
+                try {
+                    return localStorage.getItem(key);
+                } catch (error) {
+                    return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
+                }
+            },
+            setItem(key, value) {
+                try {
+                    localStorage.setItem(key, value);
+                } catch (error) {
+                    memoryStore[key] = String(value);
+                }
+            }
+        };
+
+        const supportsWorker = 'Worker' in window;
+
+        class XlsxWorkerClient {
+            constructor() {
+                this.worker = new Worker('xlsx-worker.js');
+                this.nextId = 1;
+                this.pending = new Map();
+                this.worker.onmessage = (e) => {
+                    const { id, ok, data, error } = e.data || {};
+                    const entry = this.pending.get(id);
+                    if (!entry) return;
+                    this.pending.delete(id);
+                    if (ok) {
+                        entry.resolve(data);
+                    } else {
+                        entry.reject(new Error(error || 'Worker error'));
+                    }
+                };
+                this.worker.onerror = (e) => {
+                    this.rejectAll(e.message || 'Worker crashed');
+                };
+                this.worker.onmessageerror = () => {
+                    this.rejectAll('Worker message error');
+                };
+            }
+
+            rejectAll(message) {
+                this.pending.forEach(entry => entry.reject(new Error(message)));
+                this.pending.clear();
+            }
+
+            request(type, payload, transfer) {
+                return new Promise((resolve, reject) => {
+                    const id = this.nextId++;
+                    this.pending.set(id, { resolve, reject });
+                    try {
+                        this.worker.postMessage({ id, type, ...payload }, transfer || []);
+                    } catch (error) {
+                        this.pending.delete(id);
+                        reject(error);
+                    }
+                });
+            }
+
+            async init(file, sheetName) {
+                const buffer = await file.arrayBuffer();
+                return this.request('init', { buffer, sheetName }, [buffer]);
+            }
+
+            selectSheet(sheetName) {
+                return this.request('selectSheet', { sheetName });
+            }
+
+            getInfo() {
+                return this.request('getInfo', {});
+            }
+
+            getRows(startRow, endRow, maxCols) {
+                return this.request('getRows', { startRow, endRow, maxCols });
+            }
+
+            terminate() {
+                try {
+                    this.worker.terminate();
+                } catch (error) {
+                    // Ignore
+                }
+                this.pending.clear();
+            }
+        }
+
         // Initialize Everything
         document.addEventListener('DOMContentLoaded', () => {
             renderKnowledgeBase();
 
             // Init Background
-            const bgHidden = localStorage.getItem('eve_bg_hidden') === 'true';
+            const bgHidden = safeStorage.getItem('eve_bg_hidden') === 'true';
             if (bgHidden) {
                 document.body.classList.add('no-bg');
             }
@@ -2006,12 +2415,17 @@ function reply(obj) {
 
         // ============= TAB 1: EXCEL SPLITTER =============
         let workbook1 = null;
-        let data1 = null;
+        let worksheet1 = null;
+        let sheetInfo1 = null;
         let outputHandle1 = null;
+        let file1 = null;
+        let worker1 = null;
         const supportsFS = 'showDirectoryPicker' in window;
 
         const uploadArea1 = document.getElementById('uploadArea1');
         const fileInput1 = document.getElementById('fileInput1');
+        const csvMode1 = document.getElementById('csvMode1');
+        const csvDelimiter1 = document.getElementById('csvDelimiter1');
         const fileInfo1 = document.getElementById('fileInfo1');
         const fileName1 = document.getElementById('fileName1');
         const fileDetails1 = document.getElementById('fileDetails1');
@@ -2020,6 +2434,7 @@ function reply(obj) {
         const outputSection1 = document.getElementById('outputSection1');
         const selectFolder1 = document.getElementById('selectFolder1');
         const folderName1 = document.getElementById('folderName1');
+        const csvOutput1 = document.getElementById('csvOutput1');
         const buttonGroup1 = document.getElementById('buttonGroup1');
         const processFolder1 = document.getElementById('processFolder1');
         const processZip1 = document.getElementById('processZip1');
@@ -2028,8 +2443,16 @@ function reply(obj) {
         const status1 = document.getElementById('status1');
         const sheetSelector1Container = document.getElementById('sheetSelector1Container');
         const excelSheetSelect1 = document.getElementById('excelSheetSelect1');
+        let useCsv1 = false;
 
         uploadArea1.addEventListener('click', () => fileInput1.click());
+
+        csvMode1.addEventListener('change', () => {
+            useCsv1 = csvMode1.checked;
+            fileInput1.accept = useCsv1 ? '.csv,.CSV' : '.xlsx,.XLSX';
+            resetSplitterState1();
+            showStatus1(useCsv1 ? 'CSV mode enabled. Upload a .csv file.' : 'Excel mode enabled. Upload a .xlsx file.', 'info');
+        });
 
         uploadArea1.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -2056,12 +2479,17 @@ function reply(obj) {
 
         splitColumn1.addEventListener('change', () => {
             if (splitColumn1.value !== '') {
-                if (supportsFS) {
-                    outputSection1.classList.remove('hidden');
-                } else {
-                    buttonGroup1.classList.remove('hidden');
-                    processZip1.style.display = 'block';
+                outputSection1.classList.remove('hidden');
+                buttonGroup1.classList.remove('hidden');
+                processZip1.style.display = 'block';
+                processFolder1.style.display = supportsFS ? 'block' : 'none';
+                selectFolder1.disabled = !supportsFS;
+                if (!supportsFS) {
+                    folderName1.textContent = 'Folder access not supported in this browser. Use ZIP instead.';
                 }
+            } else {
+                outputSection1.classList.add('hidden');
+                buttonGroup1.classList.add('hidden');
             }
         });
 
@@ -2069,66 +2497,211 @@ function reply(obj) {
         processFolder1.addEventListener('click', () => processSplit1('folder'));
         processZip1.addEventListener('click', () => processSplit1('zip'));
 
-        function handleFile1(file) {
-            if (!file.name.endsWith('.xlsx')) {
+        function resetSplitterState1() {
+            file1 = null;
+            sheetInfo1 = null;
+            workbook1 = null;
+            worksheet1 = null;
+            if (worker1) {
+                worker1.terminate();
+                worker1 = null;
+            }
+            fileInfo1.classList.remove('show');
+            columnSection1.classList.add('hidden');
+            outputSection1.classList.add('hidden');
+            buttonGroup1.classList.add('hidden');
+            sheetSelector1Container.classList.add('hidden');
+            splitColumn1.disabled = false;
+        }
+
+        async function handleFile1(file) {
+            if (useCsv1) {
+                if (!isCsvFile(file.name)) {
+                    showStatus1('Please select a CSV file (.csv)', 'error');
+                    return;
+                }
+            } else if (!isXlsxFile(file.name)) {
                 showStatus1('Please select an Excel file (.xlsx)', 'error');
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = function (e) {
+            if (!useCsv1) {
+                const memoryRisk = checkXlsxMemoryRisk(file, 'Excel Splitter');
+                if (!memoryRisk.ok) {
+                    showStatus1(memoryRisk.message, 'error');
+                    return;
+                }
+            }
+
+            file1 = file;
+            fileName1.textContent = file.name;
+            fileInfo1.classList.add('show');
+            status1.classList.remove('show');
+            outputHandle1 = null;
+
+            if (useCsv1) {
+                showStatus1('Scanning CSV file...', 'info');
+                sheetSelector1Container.classList.add('hidden');
+                workbook1 = null;
+                worksheet1 = null;
+                if (worker1) {
+                    worker1.terminate();
+                    worker1 = null;
+                }
+
+                const info = await scanCsvFile(file, csvDelimiter1.value, (bytesRead, totalBytes) => {
+                    const percent = totalBytes ? Math.round((bytesRead / totalBytes) * 100) : 0;
+                    showStatus1(`Scanning CSV file... ${percent}%`, 'info');
+                });
+                if (!info || info.rowCount === 0 || info.colCount === 0) {
+                    showStatus1('CSV appears to be empty or unreadable.', 'error');
+                    return;
+                }
+                info.headers = normalizeHeaders(info.headers || [], info.colCount || 0);
+                sheetInfo1 = info;
+                const limitCheck = checkHardLimits('splitterCsv', file1, info);
+                if (!limitCheck.ok) {
+                    showStatus1(limitCheck.message, 'error');
+                    columnSection1.classList.add('hidden');
+                    outputSection1.classList.add('hidden');
+                    buttonGroup1.classList.add('hidden');
+                    return;
+                }
+
+                splitColumn1.disabled = false;
+                const dataRowCount = Math.max(info.rowCount - 1, 0);
+                fileDetails1.textContent = `${dataRowCount} rows, ${info.colCount} columns • ${formatFileSize(file.size)}`;
+                splitColumn1.innerHTML = '<option value="">-- Select a column --</option>';
+                info.headers.forEach((header, index) => {
+                    const colLetter = getColumnLetter(index);
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `${colLetter}: ${header || `Column ${index + 1}`}`;
+                    splitColumn1.appendChild(option);
+                });
+                columnSection1.classList.remove('hidden');
+                outputSection1.classList.add('hidden');
+                buttonGroup1.classList.add('hidden');
+                showStatus1(`CSV loaded! Found ${info.colCount} columns. Choose a column to split by.`, 'success');
+                return;
+            }
+
+            showStatus1('Loading file...', 'info');
+
+            if (worker1) {
+                worker1.terminate();
+                worker1 = null;
+            }
+            workbook1 = null;
+            worksheet1 = null;
+            sheetInfo1 = null;
+
+            let sheetNames = [];
+            if (supportsWorker) {
                 try {
-                    workbook1 = XLSX.read(e.target.result, { type: 'array' });
-
-                    // Populate sheet selector
-                    excelSheetSelect1.innerHTML = '';
-                    workbook1.SheetNames.forEach((name) => {
-                        const option = document.createElement('option');
-                        option.value = name;
-                        option.textContent = name;
-                        excelSheetSelect1.appendChild(option);
-                    });
-
-                    if (workbook1.SheetNames.length > 1) {
-                        sheetSelector1Container.classList.remove('hidden');
-                    } else {
-                        sheetSelector1Container.classList.add('hidden');
+                    worker1 = new XlsxWorkerClient();
+                    const initData = await worker1.init(file);
+                    sheetNames = initData.sheetNames || [];
+                } catch (error) {
+                    if (worker1) {
+                        worker1.terminate();
+                        worker1 = null;
                     }
+                }
+            }
 
-                    // Process the first sheet by default
-                    processWorksheet1(workbook1.SheetNames[0]);
-
-                    fileName1.textContent = file.name;
-                    fileInfo1.classList.add('show');
-                    status1.classList.remove('show');
+            if (!worker1) {
+                try {
+                    await ensureXlsx();
+                    const buffer = await file.arrayBuffer();
+                    workbook1 = XLSX.read(buffer, { type: 'array' });
+                    sheetNames = workbook1.SheetNames || [];
                 } catch (error) {
                     showStatus1('Error reading file: ' + error.message, 'error');
+                    return;
                 }
-            };
-            reader.readAsArrayBuffer(file);
+            }
+
+            if (!sheetNames.length) {
+                showStatus1('No sheets found in this file.', 'error');
+                return;
+            }
+
+            // Populate sheet selector
+            excelSheetSelect1.innerHTML = '';
+            sheetNames.forEach((name) => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                excelSheetSelect1.appendChild(option);
+            });
+
+            if (sheetNames.length > 1) {
+                sheetSelector1Container.classList.remove('hidden');
+            } else {
+                sheetSelector1Container.classList.add('hidden');
+            }
+
+            await processWorksheet1(sheetNames[0]);
         }
 
         // Handle sheet change in Excel Splitter
-        excelSheetSelect1.addEventListener('change', (e) => {
-            if (workbook1) {
-                processWorksheet1(e.target.value);
+        excelSheetSelect1.addEventListener('change', async (e) => {
+            if (worker1 || workbook1) {
+                await processWorksheet1(e.target.value);
             }
         });
 
-        function processWorksheet1(sheetName) {
+        function getSheetInfoFromWorksheet(worksheet) {
+            const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+            const rowCount = Math.max(0, range.e.r - range.s.r + 1);
+            const colCount = Math.max(0, range.e.c - range.s.c + 1);
+            const headerRows = XLSX.utils.sheet_to_json(worksheet, {
+                header: 1,
+                range: { s: { r: 0, c: 0 }, e: { r: 0, c: Math.max(colCount - 1, 0) } },
+                defval: '',
+                blankrows: false
+            });
+            const headers = headerRows[0] || [];
+            const normalized = [];
+            for (let i = 0; i < colCount; i++) {
+                normalized[i] = headers[i] !== undefined && headers[i] !== '' ? headers[i] : `(Column ${getColumnLetter(i)})`;
+            }
+            return { rowCount, colCount, headers: normalized };
+        }
+
+        async function processWorksheet1(sheetName) {
             try {
-                const worksheet = workbook1.Sheets[sheetName];
-                if (!worksheet) return;
+                let info = null;
+                if (worker1) {
+                    info = await worker1.selectSheet(sheetName);
+                } else {
+                    worksheet1 = workbook1.Sheets[sheetName];
+                    if (!worksheet1) return;
+                    info = getSheetInfoFromWorksheet(worksheet1);
+                }
 
-                data1 = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                sheetInfo1 = info;
 
-                if (data1.length === 0) {
+                if (!info || info.rowCount === 0) {
                     showStatus1(`The sheet "${sheetName}" is empty!`, 'warning');
                     return;
                 }
 
-                const headers = data1[0];
-                fileDetails1.textContent = `${data1.length - 1} rows, ${headers.length} columns`;
+                const limitCheck = checkHardLimits('splitterXlsx', file1, info);
+                if (!limitCheck.ok) {
+                    showStatus1(limitCheck.message, 'error');
+                    columnSection1.classList.add('hidden');
+                    outputSection1.classList.add('hidden');
+                    buttonGroup1.classList.add('hidden');
+                    return;
+                }
+
+                splitColumn1.disabled = false;
+                const headers = info.headers || [];
+                const dataRowCount = Math.max(info.rowCount - 1, 0);
+                const sizeMb = file1 ? (file1.size / (1024 * 1024)).toFixed(1) : '0';
+                fileDetails1.textContent = `${dataRowCount} rows, ${info.colCount} columns • ${sizeMb} MB`;
 
                 splitColumn1.innerHTML = '<option value="">-- Select a column --</option>';
                 headers.forEach((header, index) => {
@@ -2153,6 +2726,10 @@ function reply(obj) {
         }
 
         async function selectOutputFolder1() {
+            if (!supportsFS) {
+                showStatus1('Folder picker not supported. Use ZIP download instead.', 'info');
+                return;
+            }
             try {
                 outputHandle1 = await window.showDirectoryPicker();
                 folderName1.textContent = `✓ Selected: ${outputHandle1.name}`;
@@ -2160,8 +2737,9 @@ function reply(obj) {
                 processFolder1.style.display = 'block';
                 processZip1.style.display = 'block';
             } catch (error) {
+                outputHandle1 = null;
                 if (error.name !== 'AbortError') {
-                    showStatus1('Error selecting folder: ' + error.message, 'error');
+                    showStatus1('Folder picker blocked. Use ZIP download instead.', 'info');
                 }
             }
         }
@@ -2192,38 +2770,153 @@ function reply(obj) {
                 return;
             }
 
+            if (!sheetInfo1 || !file1) {
+                showStatus1('Please upload an Excel file first', 'error');
+                return;
+            }
+            if (columnIndex >= (sheetInfo1.colCount || 0)) {
+                showStatus1('Selected column is out of range for this sheet', 'error');
+                return;
+            }
+
             showStatus1('Processing...', 'info');
             processFolder1.disabled = true;
             processZip1.disabled = true;
             progress1.classList.add('show');
+            progressFill1.style.width = '0%';
+            progressFill1.textContent = '0%';
 
             try {
-                const headers = data1[0];
-                const rows = data1.slice(1);
-                const groups = {};
-                let skippedRows = 0;
+                if (!useCsv1 || !csvOutput1.checked) {
+                    await ensureXlsx();
+                }
+                const headers = sheetInfo1.headers || [];
+                const totalRows = sheetInfo1.rowCount || 0;
+                const totalCols = sheetInfo1.colCount || 0;
+                const totalDataRows = Math.max(totalRows - 1, 0);
 
-                rows.forEach(row => {
-                    const criteriaValue = row[columnIndex];
-                    const sanitized = sanitizeFilename(criteriaValue);
-
-                    if (!sanitized) {
-                        skippedRows++;
+                if (file1.size > 80 * 1024 * 1024 || totalDataRows > 200000) {
+                    const proceed = confirm(
+                        `Large file detected (${(file1.size / (1024 * 1024)).toFixed(1)} MB, ${totalDataRows} rows).\n\n` +
+                        'This can take a long time and use significant memory in the browser.\n\nContinue?'
+                    );
+                    if (!proceed) {
+                        progress1.classList.remove('show');
+                        processFolder1.disabled = false;
+                        processZip1.disabled = false;
                         return;
                     }
+                }
 
-                    if (!groups[sanitized]) {
-                        groups[sanitized] = [];
+                const groups = new Map();
+                let skippedRows = 0;
+                let rowsProcessed = 0;
+                const chunkSize = 5000;
+
+                if (useCsv1) {
+                    let rowIndex = 0;
+                    await parseCsvStream(
+                        file1,
+                        csvDelimiter1.value,
+                        async (row) => {
+                            if (rowIndex === 0) {
+                                rowIndex++;
+                                return;
+                            }
+                            const criteriaValue = row[columnIndex];
+                            const sanitized = sanitizeFilename(criteriaValue);
+                            if (!sanitized) {
+                                skippedRows++;
+                                rowIndex++;
+                                return;
+                            }
+                            if (!groups.has(sanitized)) {
+                                groups.set(sanitized, []);
+                            }
+                            groups.get(sanitized).push(row);
+                            rowIndex++;
+                            rowsProcessed++;
+                            if (rowsProcessed % (chunkSize * 2) === 0) {
+                                await yieldToUI();
+                            }
+                        },
+                        (bytesRead, totalBytes) => {
+                            const percent = totalBytes ? Math.round((bytesRead / totalBytes) * 60) : 0;
+                            progressFill1.style.width = percent + '%';
+                            progressFill1.textContent = percent + '%';
+                        }
+                    );
+                } else {
+                    for (let startRow = 1; startRow < totalRows; startRow += chunkSize) {
+                        const endRow = Math.min(totalRows - 1, startRow + chunkSize - 1);
+                        let rows = [];
+
+                        if (worker1) {
+                            rows = await worker1.getRows(startRow, endRow, totalCols);
+                        } else {
+                            const range = { s: { r: startRow, c: 0 }, e: { r: endRow, c: Math.max(totalCols - 1, 0) } };
+                            rows = XLSX.utils.sheet_to_json(worksheet1, {
+                                header: 1,
+                                range,
+                                defval: '',
+                                blankrows: true
+                            });
+                        }
+
+                        for (const row of rows) {
+                            const criteriaValue = row[columnIndex];
+                            const sanitized = sanitizeFilename(criteriaValue);
+                            if (!sanitized) {
+                                skippedRows++;
+                                continue;
+                            }
+                            if (!groups.has(sanitized)) {
+                                groups.set(sanitized, []);
+                            }
+                            groups.get(sanitized).push(row);
+                        }
+
+                        rowsProcessed += rows.length;
+                        const percent = totalDataRows > 0 ? Math.round((rowsProcessed / totalDataRows) * 60) : 60;
+                        progressFill1.style.width = percent + '%';
+                        progressFill1.textContent = percent + '%';
+
+                        if (rowsProcessed % (chunkSize * 2) === 0) {
+                            await yieldToUI();
+                        }
                     }
-                    groups[sanitized].push(row);
-                });
+                }
 
-                const uniqueValues = Object.keys(groups);
+                const uniqueValues = Array.from(groups.keys());
+
+                if (uniqueValues.length === 0) {
+                    showStatus1('No rows found for the selected column.', 'error');
+                    progress1.classList.remove('show');
+                    processFolder1.disabled = false;
+                    processZip1.disabled = false;
+                    return;
+                }
+
+                if (mode === 'zip' && uniqueValues.length > 500) {
+                    const proceedZip = confirm(
+                        `This will create ${uniqueValues.length} files inside one ZIP.\n` +
+                        'Large ZIPs can be slow to build in a browser.\n\nContinue?'
+                    );
+                    if (!proceedZip) {
+                        progress1.classList.remove('show');
+                        processFolder1.disabled = false;
+                        processZip1.disabled = false;
+                        return;
+                    }
+                }
+
+                const useCsvOutput = csvOutput1.checked;
+                const outputDelimiter = csvDelimiter1.value;
 
                 if (mode === 'folder') {
-                    await processToFolder1(uniqueValues, groups, headers);
+                    await processToFolder1(uniqueValues, groups, headers, 60, useCsvOutput, outputDelimiter);
                 } else {
-                    await processToZip1(uniqueValues, groups, headers);
+                    await processToZip1(uniqueValues, groups, headers, 60, useCsvOutput, outputDelimiter);
                 }
 
                 let message = `✓ Successfully created ${uniqueValues.length} file(s)`;
@@ -2242,61 +2935,82 @@ function reply(obj) {
             processZip1.disabled = false;
         }
 
-        async function processToFolder1(uniqueValues, groups, headers) {
+        async function processToFolder1(uniqueValues, groups, headers, progressStart, useCsvOutput, outputDelimiter) {
             let processed = 0;
+            const total = uniqueValues.length || 1;
 
             for (const value of uniqueValues) {
-                const valueRows = groups[value];
+                const valueRows = groups.get(value) || [];
                 const rowCount = valueRows.length;
                 const newData = [headers, ...valueRows];
-                const newWorksheet = XLSX.utils.aoa_to_sheet(newData);
-                const newWorkbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, 'Sheet1');
-
-                const filename = `${value}_${rowCount}.xlsx`;
-                const wbout = XLSX.write(newWorkbook, { bookType: 'xlsx', type: 'array' });
+                const filename = useCsvOutput ? `${value}_${rowCount}.csv` : `${value}_${rowCount}.xlsx`;
 
                 const fileHandle = await outputHandle1.getFileHandle(filename, { create: true });
                 const writable = await fileHandle.createWritable();
-                await writable.write(wbout);
+
+                if (useCsvOutput) {
+                    const csvText = rowsToCsv(newData, outputDelimiter);
+                    await writable.write(csvText);
+                } else {
+                    const newWorksheet = XLSX.utils.aoa_to_sheet(newData);
+                    const newWorkbook = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, 'Sheet1');
+                    const wbout = XLSX.write(newWorkbook, { bookType: 'xlsx', type: 'array' });
+                    await writable.write(wbout);
+                }
                 await writable.close();
 
                 processed++;
-                const percent = Math.round((processed / uniqueValues.length) * 100);
+                const percent = progressStart + Math.round((processed / total) * (100 - progressStart));
                 progressFill1.style.width = percent + '%';
                 progressFill1.textContent = percent + '%';
+
+                if (processed % 25 === 0) {
+                    await yieldToUI();
+                }
             }
         }
 
-        async function processToZip1(uniqueValues, groups, headers) {
+        async function processToZip1(uniqueValues, groups, headers, progressStart, useCsvOutput, outputDelimiter) {
+            await ensureJsZip();
             const zip = new JSZip();
             let processed = 0;
+            const total = uniqueValues.length || 1;
 
             for (const value of uniqueValues) {
-                const valueRows = groups[value];
+                const valueRows = groups.get(value) || [];
                 const rowCount = valueRows.length;
                 const newData = [headers, ...valueRows];
-                const newWorksheet = XLSX.utils.aoa_to_sheet(newData);
-                const newWorkbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, 'Sheet1');
+                const filename = useCsvOutput ? `${value}_${rowCount}.csv` : `${value}_${rowCount}.xlsx`;
 
-                const filename = `${value}_${rowCount}.xlsx`;
-                const wbout = XLSX.write(newWorkbook, { bookType: 'xlsx', type: 'array' });
-                zip.file(filename, wbout);
+                if (useCsvOutput) {
+                    const csvText = rowsToCsv(newData, outputDelimiter);
+                    zip.file(filename, csvText);
+                } else {
+                    const newWorksheet = XLSX.utils.aoa_to_sheet(newData);
+                    const newWorkbook = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, 'Sheet1');
+                    const wbout = XLSX.write(newWorkbook, { bookType: 'xlsx', type: 'array' });
+                    zip.file(filename, wbout);
+                }
 
                 processed++;
-                const percent = Math.round((processed / uniqueValues.length) * 100);
+                const percent = progressStart + Math.round((processed / total) * (100 - progressStart));
                 progressFill1.style.width = percent + '%';
                 progressFill1.textContent = percent + '%';
 
-                await new Promise(resolve => setTimeout(resolve, 10));
+                if (processed % 25 === 0) {
+                    await yieldToUI();
+                }
             }
 
-            const zipBlob = await zip.generateAsync({ type: 'blob' });
+            const zipBlob = await zip.generateAsync({ type: 'blob', streamFiles: true });
             const link = document.createElement('a');
-            link.href = URL.createObjectURL(zipBlob);
+            const url = URL.createObjectURL(zipBlob);
+            link.href = url;
             link.download = 'split_files.zip';
             link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 10000);
         }
 
         function showStatus1(message, type) {
@@ -2311,6 +3025,7 @@ function reply(obj) {
         let useFallbackMode2 = false; // Tracks if we are using the fallback (no FS API)
 
         const selectInput2 = document.getElementById('selectInput2');
+        const fallbackBtn2 = document.getElementById('fallbackBtn2');
         const fallbackInput2 = document.getElementById('fallbackInput2');
         const inputFolder2 = document.getElementById('inputFolder2');
         const fileList2 = document.getElementById('fileList2');
@@ -2326,18 +3041,20 @@ function reply(obj) {
         const status2 = document.getElementById('status2');
 
         selectInput2.addEventListener('click', selectInputFolder2);
+        fallbackBtn2.addEventListener('click', () => fallbackInput2.click());
         fallbackInput2.addEventListener('change', handleFallbackFiles2);
         selectOutput2.addEventListener('click', selectOutputFolder2);
         generate2.addEventListener('click', generateEmails2);
 
         emailColumn2.addEventListener('change', () => {
-            if (emailColumn2.value !== '') {
-                // In fallback mode, we don't need output handle immediately (will zip)
-                if (useFallbackMode2 || outputHandle2) {
-                    generate2.disabled = false;
-                }
-            }
+            updateGenerateState2();
         });
+
+        function updateGenerateState2() {
+            const hasFiles = excelFiles2.length > 0;
+            const hasColumn = emailColumn2.value !== '';
+            generate2.disabled = !(hasFiles && hasColumn);
+        }
 
         async function selectInputFolder2() {
             // Reset fallback mode
@@ -2366,15 +3083,17 @@ function reply(obj) {
                     // WAIT: User said "work pc where there might be some permission issues".
                     // Code below handles the flow where we switch to fallback if desired.
                     showStatus2('Folder picker blocked. Please use the fallback file picker below.', 'info');
+                    fallbackInput2.click();
                 }
             } else {
                 // API not supported
                 showStatus2('Folder picker not supported. Please use the fallback file picker below.', 'info');
+                fallbackInput2.click();
             }
         }
 
         function handleFallbackFiles2(e) {
-            const files = Array.from(e.target.files);
+            const files = Array.from(e.target.files).filter(f => isXlsxFile(f.name));
             if (files.length > 0) {
                 useFallbackMode2 = true;
                 inputFolder2.textContent = `✓ Selected: ${files.length} file(s)`;
@@ -2387,6 +3106,8 @@ function reply(obj) {
                 }));
 
                 processLoadedFiles2();
+            } else {
+                showStatus2('No Excel (.xlsx) files selected', 'error');
             }
         }
 
@@ -2396,7 +3117,7 @@ function reply(obj) {
 
             try {
                 for await (const entry of inputHandle2.values()) {
-                    if (entry.kind === 'file' && entry.name.endsWith('.xlsx')) {
+                    if (entry.kind === 'file' && isXlsxFile(entry.name)) {
                         excelFiles2.push(entry);
                     }
                 }
@@ -2418,18 +3139,26 @@ function reply(obj) {
                 return;
             }
 
-            excelFiles2.forEach(entry => {
+            const maxList = 200;
+            excelFiles2.slice(0, maxList).forEach(entry => {
                 const fileItem = document.createElement('div');
                 fileItem.className = 'file-item';
                 fileItem.textContent = `📄 ${entry.name}`;
                 fileList2.appendChild(fileItem);
             });
+            if (excelFiles2.length > maxList) {
+                const moreItem = document.createElement('div');
+                moreItem.className = 'file-item';
+                moreItem.textContent = `…and ${excelFiles2.length - maxList} more`;
+                fileList2.appendChild(moreItem);
+            }
 
             showStatus2(`Found ${excelFiles2.length} Excel file(s)`, 'success');
             await loadColumnNames2();
             emailConfig2.classList.remove('hidden');
             outputSection2.classList.remove('hidden');
             generate2.classList.remove('hidden');
+            updateGenerateState2();
 
             // Adjust UI for fallback
             if (useFallbackMode2) {
@@ -2440,17 +3169,38 @@ function reply(obj) {
             }
         }
 
+        async function getSheetInfoFromFile2(file) {
+            const memoryRisk = checkXlsxMemoryRisk(file, 'Email Jobs');
+            if (!memoryRisk.ok) {
+                throw new Error(memoryRisk.message);
+            }
+
+            if (supportsWorker) {
+                const worker = new XlsxWorkerClient();
+                try {
+                    await worker.init(file);
+                    const info = await worker.getInfo();
+                    worker.terminate();
+                    return info;
+                } catch (error) {
+                    worker.terminate();
+                }
+            }
+
+            await ensureXlsx();
+            const arrayBuffer = await file.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            return getSheetInfoFromWorksheet(firstSheet);
+        }
+
         async function loadColumnNames2() {
             try {
                 const firstFile = excelFiles2[0];
                 const file = await firstFile.getFile();
-                const arrayBuffer = await file.arrayBuffer();
-                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const data = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-
-                if (data.length > 0) {
-                    const headers = data[0];
+                const info = await getSheetInfoFromFile2(file);
+                const headers = (info && info.headers) ? info.headers : [];
+                if (headers.length > 0) {
                     emailColumn2.innerHTML = '<option value="">-- Select a column --</option>';
                     headers.forEach((header, index) => {
                         const option = document.createElement('option');
@@ -2459,6 +3209,9 @@ function reply(obj) {
                         emailColumn2.appendChild(option);
                     });
                     columnSection2.classList.remove('hidden');
+                    updateGenerateState2();
+                } else {
+                    showStatus2('Could not read headers from the first file', 'error');
                 }
             } catch (error) {
                 showStatus2('Error reading Excel file: ' + error.message, 'error');
@@ -2466,173 +3219,272 @@ function reply(obj) {
         }
 
         async function selectOutputFolder2() {
+            if (!('showDirectoryPicker' in window)) {
+                showStatus2('Folder picker not supported. ZIP download will be used instead.', 'info');
+                updateGenerateState2();
+                return;
+            }
             try {
                 outputHandle2 = await window.showDirectoryPicker();
                 outputFolder2.textContent = `✓ Selected: ${outputHandle2.name}`;
-                if (emailColumn2.value !== '') {
-                    generate2.disabled = false;
-                }
+                updateGenerateState2();
             } catch (error) {
                 if (error.name !== 'AbortError') {
                     showStatus2('Error selecting output folder: ' + error.message, 'error');
                 }
                 // If fallback mode, we can proceed without output folder (Zip mode)
-                if (useFallbackMode2) {
-                    if (emailColumn2.value !== '') {
-                        generate2.disabled = false;
-                    }
-                }
+                updateGenerateState2();
             }
         }
 
-        async function generateEmails2() {
-            const emailColumnIndex = parseInt(emailColumn2.value);
+        async function extractEmailsFromFile(file, emailColumnIndex, onProgress) {
+            const memoryRisk = checkXlsxMemoryRisk(file, 'Email Jobs');
+            if (!memoryRisk.ok) {
+                throw new Error(memoryRisk.message);
+            }
+
+            const emails = new Set();
+            const chunkSize = 5000;
+
+            if (supportsWorker) {
+                const worker = new XlsxWorkerClient();
+                try {
+                    await worker.init(file);
+                    const info = await worker.getInfo();
+                    const totalRows = info.rowCount || 0;
+                    const totalCols = info.colCount || 0;
+
+                    if (emailColumnIndex >= totalCols) {
+                        worker.terminate();
+                        return { emails: [], totalRows };
+                    }
+
+                    let rowsProcessed = 0;
+                    for (let startRow = 1; startRow < totalRows; startRow += chunkSize) {
+                        const endRow = Math.min(totalRows - 1, startRow + chunkSize - 1);
+                        const rows = await worker.getRows(startRow, endRow, totalCols);
+                        for (const row of rows) {
+                            const email = row[emailColumnIndex];
+                            const parsed = parseEmailList2(email);
+                            for (const addr of parsed) {
+                                emails.add(addr);
+                            }
+                        }
+                        rowsProcessed += rows.length;
+                        if (typeof onProgress === 'function' && totalRows > 1) {
+                            onProgress(rowsProcessed / Math.max(totalRows - 1, 1));
+                        }
+                        if (rowsProcessed % (chunkSize * 2) === 0) {
+                            await yieldToUI();
+                        }
+                    }
+
+                    worker.terminate();
+                    return { emails: Array.from(emails), totalRows };
+                } catch (error) {
+                    worker.terminate();
+                }
+            }
+
+            await ensureXlsx();
+            const arrayBuffer = await file.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const info = getSheetInfoFromWorksheet(firstSheet);
+            const totalRows = info.rowCount || 0;
+            const totalCols = info.colCount || 0;
+
+            if (emailColumnIndex >= totalCols) {
+                return { emails: [], totalRows };
+            }
+
+            let rowsProcessed = 0;
+            for (let startRow = 1; startRow < totalRows; startRow += chunkSize) {
+                const endRow = Math.min(totalRows - 1, startRow + chunkSize - 1);
+                const range = { s: { r: startRow, c: 0 }, e: { r: endRow, c: Math.max(totalCols - 1, 0) } };
+                const rows = XLSX.utils.sheet_to_json(firstSheet, {
+                    header: 1,
+                    range,
+                    defval: '',
+                    blankrows: true
+                });
+                for (const row of rows) {
+                    const email = row[emailColumnIndex];
+                    const parsed = parseEmailList2(email);
+                    for (const addr of parsed) {
+                        emails.add(addr);
+                    }
+                }
+                rowsProcessed += rows.length;
+                if (typeof onProgress === 'function' && totalRows > 1) {
+                    onProgress(rowsProcessed / Math.max(totalRows - 1, 1));
+                }
+                if (rowsProcessed % (chunkSize * 2) === 0) {
+                    await yieldToUI();
+                }
+            }
+
+            return { emails: Array.from(emails), totalRows };
+        }
+
+                async function generateEmails2() {
+            const emailColumnIndex = parseInt(emailColumn2.value, 10);
 
             if (isNaN(emailColumnIndex)) {
                 showStatus2('Please select an email column', 'error');
                 return;
             }
 
-            if (!outputHandle2 && !useFallbackMode2) {
-                // In normal mode, require folder. In fallback, we'll zip.
-                // Actually, let's allow Zip even in normal mode if no folder selected?
-                // For now, strict check unless fallback mode, or just ask user?
-                // Let's assume if handle is null, do zip.
+            if (excelFiles2.length === 0) {
+                showStatus2('No Excel files loaded.', 'error');
+                return;
             }
 
-            // If no output handle, we defaults to ZIP
             const isZipMode = !outputHandle2;
+            const subjectTemplate = document.getElementById('emailSubject2').value || 'Report';
+            const bodyTemplate = document.getElementById('emailBody2').value || '';
+            const cc = (document.getElementById('ccEmail2').value || '').trim();
+
+            const batchConfirm = confirm(
+                `Create draft emails for ${excelFiles2.length} file(s)?\n\n` +
+                `Output: ${isZipMode ? 'ZIP download' : 'Selected folder'}\n` +
+                `Each draft will include the source Excel file as attachment.`
+            );
+            if (!batchConfirm) {
+                showStatus2('Draft generation cancelled by user.', 'warning');
+                return;
+            }
+
+            if (excelFiles2.length >= 75) {
+                const largeBatchConfirm = confirm(
+                    `Large batch detected (${excelFiles2.length} files). Continue generating all drafts now?`
+                );
+                if (!largeBatchConfirm) {
+                    showStatus2('Draft generation cancelled by user.', 'warning');
+                    return;
+                }
+            }
 
             generate2.disabled = true;
-            showStatus2(isZipMode ? 'Generating ZIP...' : 'Generating email files...', 'info');
             progress2.classList.add('show');
+            progressFill2.style.width = '0%';
+            progressFill2.textContent = '0%';
+            showStatus2(isZipMode ? 'Generating draft ZIP...' : 'Generating draft files...', 'info');
 
             try {
-                let processed = 0;
-                const subject = document.getElementById('emailSubject2').value || 'Report';
-                const body = document.getElementById('emailBody2').value || '';
-                const cc = document.getElementById('ccEmail2').value || '';
+                const createdAt = new Date().toISOString();
+                let created = 0;
+                let skipped = 0;
+                const report = [];
 
-                const zip = isZipMode ? new JSZip() : null;
+                let zip = null;
+                if (isZipMode) {
+                    await ensureJsZip();
+                    zip = new JSZip();
+                }
 
-                for (const fileEntry of excelFiles2) {
+                for (let fileIndex = 0; fileIndex < excelFiles2.length; fileIndex++) {
+                    const fileEntry = excelFiles2[fileIndex];
                     const file = await fileEntry.getFile();
-                    const arrayBuffer = await file.arrayBuffer();
-                    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const data = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                    const progressBase = fileIndex / excelFiles2.length;
+                    const progressSpan = 1 / excelFiles2.length;
 
-                    const emails = [];
-                    for (let i = 1; i < data.length; i++) {
-                        const email = data[i][emailColumnIndex];
-                        if (email && email.toString().includes('@')) {
-                            emails.push(email.toString().trim());
-                        }
-                    }
-
-                    const uniqueEmails = [...new Set(emails)];
-
-                    if (uniqueEmails.length === 0) {
-                        console.warn(`No valid emails found in ${file.name}`);
+                    let uniqueEmails = [];
+                    try {
+                        const extracted = await extractEmailsFromFile(file, emailColumnIndex, (fileProgress) => {
+                            const overall = Math.round((progressBase + (fileProgress * progressSpan)) * 100);
+                            progressFill2.style.width = overall + '%';
+                            progressFill2.textContent = overall + '%';
+                        });
+                        uniqueEmails = extracted.emails || [];
+                    } catch (error) {
+                        skipped++;
+                        report.push({ sourceFile: file.name, status: 'error', reason: error.message });
                         continue;
                     }
 
-                    const attachmentFile = await fileEntry.getFile();
-                    const attachmentBuffer = await attachmentFile.arrayBuffer();
+                    if (uniqueEmails.length === 0) {
+                        skipped++;
+                        report.push({ sourceFile: file.name, status: 'skipped', reason: 'No valid recipient emails found in selected column.' });
+                        continue;
+                    }
 
-                    const emailFileName = file.name.replace('.xlsx', '.eml');
-                    const emailSubject = subject.replace('{{filename}}', file.name.replace('.xlsx', ''));
+                    const baseName = stripXlsxExtension(file.name);
+                    const draftFileName = `${baseName}.draft.eml`;
+                    const emailSubject = subjectTemplate.replace(/\{\{filename\}\}/g, baseName);
+                    const bodyText = bodyTemplate.replace(/\{\{filename\}\}/g, baseName);
 
-                    const emlContent = await createEMLFile(
-                        uniqueEmails.join(', '),
-                        cc,
-                        emailSubject,
-                        body,
-                        attachmentBuffer,
-                        file.name
-                    );
+                    const emailJob = {
+                        sourceFile: {
+                            name: file.name,
+                            sizeBytes: file.size
+                        },
+                        message: {
+                            to: uniqueEmails,
+                            cc: cc ? [cc] : [],
+                            subject: emailSubject,
+                            bodyText
+                        }
+                    };
+
+                    const attachmentBuffer = await file.arrayBuffer();
+                    const emlContent = buildEmlDraftFromJob2(emailJob, file.name, attachmentBuffer);
 
                     if (isZipMode) {
-                        zip.file(emailFileName, emlContent);
+                        zip.file(draftFileName, emlContent);
                     } else {
-                        const emlFileHandle = await outputHandle2.getFileHandle(emailFileName, { create: true });
-                        const writable = await emlFileHandle.createWritable();
+                        const fileHandle = await outputHandle2.getFileHandle(draftFileName, { create: true });
+                        const writable = await fileHandle.createWritable();
                         await writable.write(emlContent);
                         await writable.close();
                     }
 
-                    processed++;
-                    const percent = Math.round((processed / excelFiles2.length) * 100);
+                    created++;
+                    report.push({
+                        sourceFile: file.name,
+                        status: 'created',
+                        draftFile: draftFileName,
+                        recipients: uniqueEmails.length
+                    });
+
+                    const percent = Math.round(((fileIndex + 1) / excelFiles2.length) * 100);
                     progressFill2.style.width = percent + '%';
                     progressFill2.textContent = percent + '%';
+                    await yieldToUI();
                 }
 
-                if (isZipMode && processed > 0) {
-                    showStatus2('Zipping files...', 'info');
-                    const zipBlob = await zip.generateAsync({ type: 'blob' });
+                const reportJson = JSON.stringify({
+                    schemaVersion: '1.0',
+                    generatedAt: createdAt,
+                    totalFiles: excelFiles2.length,
+                    created,
+                    skipped,
+                    report
+                }, null, 2);
+
+                if (isZipMode) {
+                    zip.file('email-drafts-report.json', reportJson);
+                    const zipBlob = await zip.generateAsync({ type: 'blob', streamFiles: true });
                     const link = document.createElement('a');
-                    link.href = URL.createObjectURL(zipBlob);
-                    link.download = 'generated_emails.zip';
+                    const url = URL.createObjectURL(zipBlob);
+                    link.href = url;
+                    link.download = 'email_drafts.zip';
                     link.click();
+                    setTimeout(() => URL.revokeObjectURL(url), 10000);
+                } else {
+                    const reportHandle = await outputHandle2.getFileHandle('email-drafts-report.json', { create: true });
+                    const reportWritable = await reportHandle.createWritable();
+                    await reportWritable.write(reportJson);
+                    await reportWritable.close();
                 }
 
-                showStatus2(`✓ Successfully created ${processed} email file(s)${isZipMode ? ' (ZIP)' : ''}`, 'success');
-                progress2.classList.remove('show');
+                showStatus2(`Created ${created} draft(s), skipped ${skipped}.`, created > 0 ? 'success' : 'warning');
             } catch (error) {
-                showStatus2('Error generating emails: ' + error.message, 'error');
-                progress2.classList.remove('show');
+                showStatus2('Error generating drafts: ' + error.message, 'error');
             }
 
+            progress2.classList.remove('show');
             generate2.disabled = false;
-        }
-
-        async function createEMLFile(to, cc, subject, body, attachmentBuffer, attachmentName) {
-            const boundary = '----=_NextPart_' + Date.now();
-            const attachmentData = arrayBufferToBase64(attachmentBuffer);
-
-            const normalizedBody = body.replace(/\r?\n/g, '\r\n');
-
-            let eml = 'From: <your.email@example.com>\r\n';
-            eml += 'To: ' + to + '\r\n';
-
-            if (cc) {
-                eml += 'Cc: ' + cc + '\r\n';
-            }
-
-            eml += 'Subject: ' + subject + '\r\n';
-            eml += 'MIME-Version: 1.0\r\n';
-            eml += 'Content-Type: multipart/mixed; boundary="' + boundary + '"\r\n';
-            eml += '\r\n';
-
-            eml += '--' + boundary + '\r\n';
-            eml += 'Content-Type: text/plain; charset="UTF-8"\r\n';
-            eml += 'Content-Transfer-Encoding: 7bit\r\n';
-            eml += '\r\n';
-            eml += normalizedBody + '\r\n';
-
-            eml += '--' + boundary + '\r\n';
-            eml += 'Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; name="' + attachmentName + '"\r\n';
-            eml += 'Content-Transfer-Encoding: base64\r\n';
-            eml += 'Content-Disposition: attachment; filename="' + attachmentName + '"\r\n';
-            eml += '\r\n';
-            eml += attachmentData + '\r\n';
-
-            eml += '--' + boundary + '--\r\n';
-
-            return eml;
-        }
-
-        function arrayBufferToBase64(buffer) {
-            const bytes = new Uint8Array(buffer);
-            const chunkSize = 0x8000;
-            let binary = '';
-            for (let i = 0; i < bytes.length; i += chunkSize) {
-                const chunk = bytes.subarray(i, i + chunkSize);
-                binary += String.fromCharCode.apply(null, chunk);
-            }
-            const base64 = btoa(binary);
-            const lines = base64.match(/.{1,76}/g) || [];
-            return lines.join('\r\n');
         }
 
         function showStatus2(message, type) {
@@ -2640,15 +3492,125 @@ function reply(obj) {
             status2.className = 'status show ' + type;
         }
 
+        function parseEmailList2(rawValue) {
+            if (rawValue === null || rawValue === undefined) return [];
+            const parts = String(rawValue)
+                .split(/[;,\n\r\t ]+/)
+                .map(v => v.trim())
+                .filter(Boolean);
+
+            const valid = [];
+            for (const p of parts) {
+                const normalized = p.replace(/^<|>$/g, '');
+                if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+                    valid.push(normalized);
+                }
+            }
+            return valid;
+        }
+
+        function getAttachmentMimeType2(fileName) {
+            const lower = (fileName || '').toLowerCase();
+            if (lower.endsWith('.xlsx')) return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+            if (lower.endsWith('.xls')) return 'application/vnd.ms-excel';
+            if (lower.endsWith('.csv')) return 'text/csv';
+            return 'application/octet-stream';
+        }
+
+        function sanitizeHeaderValue2(value) {
+            return String(value || '').replace(/[\r\n]+/g, ' ').trim();
+        }
+
+        function sanitizeAsciiFileName2(fileName) {
+            const clean = sanitizeHeaderValue2(fileName || 'attachment.bin');
+            const ascii = clean.replace(/[^\x20-\x7E]/g, '_').replace(/["\\]/g, '_');
+            return ascii || 'attachment.bin';
+        }
+
+        function foldHeader2(headerName, values) {
+            const list = Array.isArray(values) ? values : (values ? [values] : []);
+            if (list.length === 0) return '';
+
+            let line = `${headerName}: `;
+            const lines = [];
+            const maxLen = 78;
+
+            for (let i = 0; i < list.length; i++) {
+                const token = String(list[i]);
+                const suffix = i < list.length - 1 ? ', ' : '';
+                if ((line + token + suffix).length > maxLen && line !== `${headerName}: `) {
+                    lines.push(line);
+                    line = ` ${token}${suffix}`;
+                } else {
+                    line += `${token}${suffix}`;
+                }
+            }
+            lines.push(line);
+            return lines.join('\r\n') + '\r\n';
+        }
+
+        function bufferToBase64Lines2(buffer) {
+            const bytes = new Uint8Array(buffer);
+            const chunkSize = 0x8000;
+            let binary = '';
+            for (let i = 0; i < bytes.length; i += chunkSize) {
+                binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+            }
+            const base64 = btoa(binary);
+            return (base64.match(/.{1,76}/g) || []).join('\r\n');
+        }
+
+        function buildEmlDraftFromJob2(job, attachmentName, attachmentBuffer) {
+            const boundary = '----=_Part_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+            const toList = Array.isArray(job.message?.to) ? job.message.to : [];
+            const ccList = Array.isArray(job.message?.cc) ? job.message.cc : [];
+            const subject = sanitizeHeaderValue2(job.message?.subject || '');
+            const body = String(job.message?.bodyText || '').replace(/\r?\n/g, '\r\n');
+            const mimeType = getAttachmentMimeType2(attachmentName);
+            const attachmentBase64 = bufferToBase64Lines2(attachmentBuffer);
+            const safeAttachmentName = sanitizeAsciiFileName2(attachmentName);
+            const now = new Date().toUTCString();
+            const messageId = `<${Date.now()}.${Math.random().toString(36).slice(2)}@local.invalid>`;
+
+            let eml = '';
+            eml += 'From: Draft Generator <no-reply@local.invalid>\r\n';
+            eml += foldHeader2('To', toList);
+            if (ccList.length > 0) eml += foldHeader2('Cc', ccList);
+            eml += `Subject: ${subject}\r\n`;
+            eml += `Date: ${now}\r\n`;
+            eml += `Message-ID: ${messageId}\r\n`;
+            eml += 'X-Unsent: 1\r\n';
+            eml += 'MIME-Version: 1.0\r\n';
+            eml += `Content-Type: multipart/mixed; boundary="${boundary}"\r\n`;
+            eml += '\r\n';
+            eml += `--${boundary}\r\n`;
+            eml += 'Content-Type: text/plain; charset="UTF-8"\r\n';
+            eml += 'Content-Transfer-Encoding: 7bit\r\n';
+            eml += '\r\n';
+            eml += body + '\r\n';
+            eml += `--${boundary}\r\n`;
+            eml += `Content-Type: ${mimeType}; name="${safeAttachmentName}"\r\n`;
+            eml += 'Content-Transfer-Encoding: base64\r\n';
+            eml += `Content-Disposition: attachment; filename="${safeAttachmentName}"\r\n`;
+            eml += '\r\n';
+            eml += attachmentBase64 + '\r\n';
+            eml += `--${boundary}--\r\n`;
+            return eml;
+        }
         // ============= TAB 4: GOOGLE SHEETS SYNC =============
         let workbook4 = null;
-        let data4 = null;
+        let worksheet4 = null;
+        let sheetInfo4 = null;
         let headers4 = [];
         let columnMappings4 = [];
+        let file4 = null;
+        let worker4 = null;
 
         // DOM Elements
         const uploadArea4 = document.getElementById('uploadArea4');
         const fileInput4 = document.getElementById('fileInput4');
+        const csvMode4 = document.getElementById('csvMode4');
+        const csvDelimiter4 = document.getElementById('csvDelimiter4');
         const fileInfo4 = document.getElementById('fileInfo4');
         const fileName4 = document.getElementById('fileName4');
         const fileDetails4 = document.getElementById('fileDetails4');
@@ -2666,6 +3628,7 @@ function reply(obj) {
         const startRow4 = document.getElementById('startRow4');
         const sheetSelector4Container = document.getElementById('sheetSelector4Container');
         const excelSheetSelect4 = document.getElementById('excelSheetSelect4');
+        let useCsv4 = false;
 
         // Radio button styling (Updated for Card UI)
         document.querySelectorAll('input[name="importMode4"]').forEach(radio => {
@@ -2675,11 +3638,11 @@ function reply(obj) {
             });
         });
 
-        // Load saved settings from localStorage
+        // Load saved settings from storage (may be restricted in some environments)
         window.addEventListener('load', () => {
-            const savedWebAppUrl = localStorage.getItem('eve_webAppUrl');
-            const savedSheetsUrl = localStorage.getItem('eve_sheetsUrl');
-            const savedSheetName = localStorage.getItem('eve_sheetName');
+            const savedWebAppUrl = safeStorage.getItem('eve_webAppUrl');
+            const savedSheetsUrl = safeStorage.getItem('eve_sheetsUrl');
+            const savedSheetName = safeStorage.getItem('eve_sheetName');
 
             if (savedWebAppUrl) webAppUrl4.value = savedWebAppUrl;
             if (savedSheetsUrl) sheetsUrl4.value = savedSheetsUrl;
@@ -2687,6 +3650,30 @@ function reply(obj) {
         });
 
         // File upload handlers
+        csvMode4.addEventListener('change', () => {
+            useCsv4 = csvMode4.checked;
+            fileInput4.accept = useCsv4 ? '.csv,.CSV' : '.xlsx,.XLSX';
+            resetSyncState4();
+            showStatus4(useCsv4 ? 'CSV mode enabled. Upload a .csv file.' : 'Excel mode enabled. Upload a .xlsx file.', 'info');
+        });
+
+        function resetSyncState4() {
+            file4 = null;
+            sheetInfo4 = null;
+            workbook4 = null;
+            worksheet4 = null;
+            headers4 = [];
+            columnMappings4 = [];
+            if (worker4) {
+                worker4.terminate();
+                worker4 = null;
+            }
+            fileInfo4.classList.remove('show');
+            mappingSection4.classList.add('hidden');
+            modeSection4.classList.add('hidden');
+            syncBtn4.classList.add('hidden');
+            sheetSelector4Container.classList.add('hidden');
+        }
         uploadArea4.addEventListener('click', () => fileInput4.click());
 
         uploadArea4.addEventListener('dragover', (e) => {
@@ -2712,90 +3699,180 @@ function reply(obj) {
             }
         });
 
-        function handleFile4(file) {
-            if (!file.name.endsWith('.xlsx')) {
+        async function handleFile4(file) {
+            if (useCsv4) {
+                if (!isCsvFile(file.name)) {
+                    showStatus4('Please select a CSV file (.csv)', 'error');
+                    return;
+                }
+            } else if (!isXlsxFile(file.name)) {
                 showStatus4('Please select an Excel file (.xlsx)', 'error');
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = function (e) {
+            if (!useCsv4) {
+                const memoryRisk = checkXlsxMemoryRisk(file, 'Google Sheets Sync');
+                if (!memoryRisk.ok) {
+                    showStatus4(memoryRisk.message, 'error');
+                    return;
+                }
+            }
+
+            file4 = file;
+            fileName4.textContent = file.name;
+            fileInfo4.classList.add('show');
+
+            if (useCsv4) {
+                showStatus4('Scanning CSV file...', 'info');
+                sheetSelector4Container.classList.add('hidden');
+                if (worker4) {
+                    worker4.terminate();
+                    worker4 = null;
+                }
+                workbook4 = null;
+                worksheet4 = null;
+                sheetInfo4 = null;
+
+                const info = await scanCsvFile(file, csvDelimiter4.value, (bytesRead, totalBytes) => {
+                    const percent = totalBytes ? Math.round((bytesRead / totalBytes) * 100) : 0;
+                    showStatus4(`Scanning CSV file... ${percent}%`, 'info');
+                });
+                if (!info || info.rowCount === 0 || info.colCount === 0) {
+                    showStatus4('CSV appears to be empty or unreadable.', 'error');
+                    return;
+                }
+                info.headers = normalizeHeaders(info.headers || [], info.colCount || 0);
+                sheetInfo4 = info;
+                const limitCheck = checkHardLimits('syncCsv', file4, info);
+                if (!limitCheck.ok) {
+                    showStatus4(limitCheck.message, 'error');
+                    mappingSection4.classList.add('hidden');
+                    modeSection4.classList.add('hidden');
+                    syncBtn4.classList.add('hidden');
+                    return;
+                }
+
+                headers4 = info.headers || [];
+                const totalColumns = info.colCount || headers4.length;
+                const dataRowCount = Math.max(info.rowCount - 1, 0);
+                const lastColLabel = totalColumns > 0 ? getColumnLetter(totalColumns - 1) : 'A';
+                fileDetails4.textContent = `${dataRowCount} rows, ${totalColumns} columns (A to ${lastColLabel}) • ${formatFileSize(file.size)}`;
+
+                mappingRows4.innerHTML = '';
+                columnMappings4 = [];
+                addMappingRow4();
+
+                modeSection4.classList.remove('hidden');
+                mappingSection4.classList.remove('hidden');
+                syncBtn4.classList.remove('hidden');
+                showStatus4(`CSV loaded! Found ${totalColumns} columns. Configure column mappings below.`, 'success');
+                return;
+            }
+
+            showStatus4('Loading file...', 'info');
+
+            if (worker4) {
+                worker4.terminate();
+                worker4 = null;
+            }
+            workbook4 = null;
+            worksheet4 = null;
+            sheetInfo4 = null;
+
+            let sheetNames = [];
+            if (supportsWorker) {
                 try {
-                    workbook4 = XLSX.read(e.target.result, { type: 'array' });
-
-                    // Populate sheet selector
-                    excelSheetSelect4.innerHTML = '';
-                    workbook4.SheetNames.forEach((name, index) => {
-                        const option = document.createElement('option');
-                        option.value = name;
-                        option.textContent = name;
-                        excelSheetSelect4.appendChild(option);
-                    });
-
-                    if (workbook4.SheetNames.length > 1) {
-                        sheetSelector4Container.classList.remove('hidden');
-                    } else {
-                        sheetSelector4Container.classList.add('hidden');
+                    worker4 = new XlsxWorkerClient();
+                    const initData = await worker4.init(file);
+                    sheetNames = initData.sheetNames || [];
+                } catch (error) {
+                    if (worker4) {
+                        worker4.terminate();
+                        worker4 = null;
                     }
+                }
+            }
 
-                    // Process the first sheet by default
-                    processWorksheet4(workbook4.SheetNames[0]);
-
-                    fileName4.textContent = file.name;
-                    fileInfo4.classList.add('show');
-
-                    // Show configuration sections
-                    modeSection4.classList.remove('hidden');
-                    mappingSection4.classList.remove('hidden');
-                    syncBtn4.classList.remove('hidden');
-
+            if (!worker4) {
+                try {
+                    await ensureXlsx();
+                    const buffer = await file.arrayBuffer();
+                    workbook4 = XLSX.read(buffer, { type: 'array' });
+                    sheetNames = workbook4.SheetNames || [];
                 } catch (error) {
                     showStatus4('Error reading file: ' + error.message, 'error');
+                    return;
                 }
-            };
-            reader.readAsArrayBuffer(file);
+            }
+
+            if (!sheetNames.length) {
+                showStatus4('No sheets found in this file.', 'error');
+                return;
+            }
+
+            // Populate sheet selector
+            excelSheetSelect4.innerHTML = '';
+            sheetNames.forEach((name) => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                excelSheetSelect4.appendChild(option);
+            });
+
+            if (sheetNames.length > 1) {
+                sheetSelector4Container.classList.remove('hidden');
+            } else {
+                sheetSelector4Container.classList.add('hidden');
+            }
+
+            await processWorksheet4(sheetNames[0]);
+
+            // Show configuration sections
+            modeSection4.classList.remove('hidden');
+            mappingSection4.classList.remove('hidden');
+            syncBtn4.classList.remove('hidden');
         }
 
         // Handle sheet change in Excel
-        excelSheetSelect4.addEventListener('change', (e) => {
-            if (workbook4) {
-                processWorksheet4(e.target.value);
+        excelSheetSelect4.addEventListener('change', async (e) => {
+            if (worker4 || workbook4) {
+                await processWorksheet4(e.target.value);
             }
         });
 
-        function processWorksheet4(sheetName) {
+        async function processWorksheet4(sheetName) {
             try {
-                const worksheet = workbook4.Sheets[sheetName];
-                if (!worksheet) return;
+                let info = null;
+                if (worker4) {
+                    info = await worker4.selectSheet(sheetName);
+                } else {
+                    worksheet4 = workbook4.Sheets[sheetName];
+                    if (!worksheet4) return;
+                    info = getSheetInfoFromWorksheet(worksheet4);
+                }
 
-                // Get the actual range of the worksheet to find all columns
-                const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
-                const totalColumns = range.e.c + 1; // End column index + 1
+                sheetInfo4 = info;
 
-                // Read data with defval to preserve empty cells
-                data4 = XLSX.utils.sheet_to_json(worksheet, {
-                    header: 1,
-                    defval: '',  // Use empty string for empty cells
-                    blankrows: true  // Include blank rows
-                });
-
-                if (data4.length === 0) {
+                if (!info || info.rowCount === 0) {
                     showStatus4(`The sheet "${sheetName}" is empty!`, 'warning');
                     return;
                 }
 
-                // Get headers from first row, ensuring we have all columns
-                const firstRow = data4[0] || [];
-                headers4 = [];
-
-                // Create headers array with proper length, filling in missing headers
-                for (let i = 0; i < totalColumns; i++) {
-                    headers4[i] = firstRow[i] !== undefined && firstRow[i] !== ''
-                        ? firstRow[i]
-                        : `(Column ${getColumnLetter(i)})`;
+                const limitCheck = checkHardLimits('syncXlsx', file4, info);
+                if (!limitCheck.ok) {
+                    showStatus4(limitCheck.message, 'error');
+                    mappingSection4.classList.add('hidden');
+                    modeSection4.classList.add('hidden');
+                    syncBtn4.classList.add('hidden');
+                    return;
                 }
 
-                fileDetails4.textContent = `${data4.length - 1} rows, ${totalColumns} columns (A to ${getColumnLetter(totalColumns - 1)})`;
+                headers4 = info.headers || [];
+                const totalColumns = info.colCount || headers4.length;
+                const dataRowCount = Math.max(info.rowCount - 1, 0);
+                const sizeMb = file4 ? (file4.size / (1024 * 1024)).toFixed(1) : '0';
+                const lastColLabel = totalColumns > 0 ? getColumnLetter(totalColumns - 1) : 'A';
+                fileDetails4.textContent = `${dataRowCount} rows, ${totalColumns} columns (A to ${lastColLabel}) • ${sizeMb} MB`;
 
                 // Clear previous mappings and add one default mapping
                 mappingRows4.innerHTML = '';
@@ -2938,21 +4015,9 @@ function reply(obj) {
             const includeHeaders = document.getElementById('includeHeaders4').checked;
             const customStartRow = startRow4.value.trim();
 
-            let dataRows = data4;
-            let rowOverride = null;
-
-            // Slicing & StartRow Logic:
-            if (isAppend) {
-                // Append Mode: Always skip row 1 of Excel
-                dataRows = data4.slice(1);
-            } else {
-                // Overwrite Mode
-                if (!includeHeaders) {
-                    // Skip row 1 of Excel
-                    dataRows = data4.slice(1);
-                    // Default to Row 2 of Sheet to preserve existing headers
-                    if (!customStartRow) rowOverride = 2;
-                }
+            if (!file4 || !sheetInfo4) {
+                showStatus4('Please upload an Excel file first', 'error');
+                return;
             }
 
             // Validation
@@ -2977,6 +4042,11 @@ function reply(obj) {
             }
 
             let finalStartRow = null;
+            let rowOverride = null;
+            if (!isAppend && !includeHeaders && !customStartRow) {
+                rowOverride = 2;
+            }
+
             if (customStartRow) {
                 const parsedStartRow = Number.parseInt(customStartRow, 10);
                 if (!Number.isFinite(parsedStartRow) || parsedStartRow < 1) {
@@ -2996,29 +4066,27 @@ function reply(obj) {
 
             showStatus4(`Preparing to Sync (${modeText} ${rowText})...`, 'info');
             progress4.classList.add('show');
-            progressFill4.style.width = '10%';
-            progressFill4.textContent = '10%';
+            progressFill4.style.width = '5%';
+            progressFill4.textContent = '5%';
 
             try {
-                // Create column mapping info for the Apps Script
-                const mappings = columnMappings4.map(m => ({
-                    excelCol: m.excelCol,
-                    sheetsCol: m.sheetsCol
-                }));
+                const totalRows = sheetInfo4.rowCount || 0;
+                const totalCols = sheetInfo4.colCount || 0;
+                const excelStartRow = isAppend ? 1 : (includeHeaders ? 0 : 1);
+                const totalDataRows = Math.max(totalRows - excelStartRow, 0);
 
-                // Prepare the data to send
-                const payload = {
-                    spreadsheetId: spreadsheetId,
-                    sheetName: targetSheetName,
-                    mode: importMode,
-                    startRow: finalStartRow,
-                    mappings: mappings,
-                    data: dataRows
-                };
+                if (totalDataRows === 0) {
+                    showStatus4('No rows to send from the selected sheet.', 'warning');
+                    progress4.classList.remove('show');
+                    syncBtn4.disabled = false;
+                    return;
+                }
 
-                // Warn about large data size
-                if (dataRows.length > 5000) {
-                    const proceed = confirm(`⚠️ Large Dataset Detected (${dataRows.length} rows)\n\nGoogle Apps Script may timeout with this much data (>5000 rows). It's recommended to split your data or sync in smaller batches.\n\nDo you want to try anyway?`);
+                if (totalDataRows > 5000) {
+                    const proceed = confirm(
+                        `⚠️ Large Dataset Detected (${totalDataRows} rows)\n\n` +
+                        'This will be sent in batches to avoid Google Apps Script timeouts.\n\nContinue?'
+                    );
                     if (!proceed) {
                         syncBtn4.disabled = false;
                         progress4.classList.remove('show');
@@ -3026,40 +4094,128 @@ function reply(obj) {
                     }
                 }
 
-                progressFill4.style.width = '30%';
-                progressFill4.textContent = '30%';
-                showStatus4('Sending data to Google Sheets...', 'info');
+                // Create column mapping info for the Apps Script
+                const mappings = columnMappings4.map(m => ({
+                    excelCol: m.excelCol,
+                    sheetsCol: m.sheetsCol
+                }));
 
-                progressFill4.style.width = '50%';
-                progressFill4.textContent = '50%';
+                const batchSize = totalDataRows > 50000 ? 500 : 1000;
+                let sentRows = 0;
+                let resolvedStartRow = finalStartRow;
+                let firstBatch = true;
 
-                // Send data to the Web App
-                const response = await fetch(webAppUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(payload)
-                });
+                const sendBatch = async (batchRows) => {
+                    const startRowForBatch = resolvedStartRow !== null ? resolvedStartRow + sentRows : null;
+                    const modeForBatch = firstBatch ? importMode : 'append';
 
-                if (!response.ok) {
-                    throw new Error(`Server responded with ${response.status}`);
+                    const payload = {
+                        spreadsheetId: spreadsheetId,
+                        sheetName: targetSheetName,
+                        mode: modeForBatch,
+                        startRow: startRowForBatch,
+                        mappings: mappings,
+                        data: batchRows
+                    };
+
+                    showStatus4(`Sending rows ${sentRows + 1}-${sentRows + batchRows.length}...`, 'info');
+
+                    const response = await fetch(webAppUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Server responded with ${response.status}`);
+                    }
+
+                    let responseData = null;
+                    let responseText = '';
+                    try {
+                        responseData = await response.json();
+                    } catch (error) {
+                        responseText = await response.text().catch(() => '');
+                    }
+
+                    if (firstBatch && resolvedStartRow === null) {
+                        if (responseData && Number.isFinite(responseData.startRowUsed)) {
+                            resolvedStartRow = responseData.startRowUsed;
+                        } else {
+                            resolvedStartRow = 1;
+                        }
+                    }
+
+                    sentRows += batchRows.length;
+                    firstBatch = false;
+
+                    const percent = Math.round((sentRows / totalDataRows) * 100);
+                    progressFill4.style.width = percent + '%';
+                    progressFill4.textContent = percent + '%';
+
+                    await yieldToUI();
+                };
+
+                if (useCsv4) {
+                    let rowIndex = 0;
+                    let batch = [];
+
+                    await parseCsvStream(
+                        file4,
+                        csvDelimiter4.value,
+                        async (row) => {
+                            if (rowIndex < excelStartRow) {
+                                rowIndex++;
+                                return;
+                            }
+
+                            batch.push(row);
+                            rowIndex++;
+
+                            if (batch.length >= batchSize) {
+                                await sendBatch(batch);
+                                batch = [];
+                            }
+                        }
+                    );
+
+                    if (batch.length > 0) {
+                        await sendBatch(batch);
+                    }
+                } else {
+                    while (sentRows < totalDataRows) {
+                        const batchStartRow = excelStartRow + sentRows;
+                        const batchEndRow = Math.min(totalRows - 1, batchStartRow + batchSize - 1);
+
+                        let batchRows = [];
+                        if (worker4) {
+                            batchRows = await worker4.getRows(batchStartRow, batchEndRow, totalCols);
+                        } else {
+                            const range = { s: { r: batchStartRow, c: 0 }, e: { r: batchEndRow, c: Math.max(totalCols - 1, 0) } };
+                            batchRows = XLSX.utils.sheet_to_json(worksheet4, {
+                                header: 1,
+                                range,
+                                defval: '',
+                                blankrows: true
+                            });
+                        }
+
+                        if (batchRows.length === 0) {
+                            throw new Error('No rows returned for this batch. Aborting to prevent an infinite loop.');
+                        }
+
+                        await sendBatch(batchRows);
+                    }
                 }
-                const responseText = await response.text().catch(() => '');
 
-                progressFill4.style.width = '90%';
-                progressFill4.textContent = '90%';
+                showStatus4(`✓ Data sent to Google Sheets!\n\nMode: ${modeText}\nSheet: ${targetSheetName}\nRows sent: ${sentRows}`, 'success');
 
-                progressFill4.style.width = '100%';
-                progressFill4.textContent = '100%';
-
-                const responseNote = responseText ? `\n\nServer: ${responseText}` : '';
-                showStatus4(`✓ Data sent to Google Sheets!\n\nMode: ${modeText}\nSheet: ${targetSheetName}\nRows sent: ${dataRows.length}${responseNote}`, 'success');
-
-                // SAVE SETTINGS TO LOCAL STORAGE ON SUCCESS
-                localStorage.setItem('eve_webAppUrl', webAppUrl);
-                localStorage.setItem('eve_sheetsUrl', sheetsInput);
-                localStorage.setItem('eve_sheetName', targetSheetName);
+                // SAVE SETTINGS TO STORAGE ON SUCCESS
+                safeStorage.setItem('eve_webAppUrl', webAppUrl);
+                safeStorage.setItem('eve_sheetsUrl', sheetsInput);
+                safeStorage.setItem('eve_sheetName', targetSheetName);
 
                 setTimeout(() => {
                     progress4.classList.remove('show');
@@ -3082,3 +4238,5 @@ function reply(obj) {
 </body>
 
 </html>
+
+
