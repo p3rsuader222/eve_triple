@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outlook Draft Prep</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon_munke.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <main class="shell">
+        <header class="hero">
+            <div>
+                <h1>Outlook Draft Prep</h1>
+                <p class="subtitle">
+                    1) Pick files  2) Write email  3) Preview  4) Generate
+                </p>
+            </div>
+        </header>
+
+        <section class="panel" id="excelPanel">
+            <div class="panel-title-row">
+                <h2>1. Choose Excel Files</h2>
+                <span class="badge neutral" id="excelCountBadge">0 files</span>
+            </div>
+
+            <div class="grid two">
+                <div>
+                    <label class="label">Excel files</label>
+                    <div class="row-wrap">
+                        <button type="button" class="btn" id="excelFolderBtn">Select Folder</button>
+                        <button type="button" class="btn secondary" id="excelFilesBtn">Choose Files</button>
+                        <input type="file" id="excelFilesInput" accept=".xlsx,.XLSX" multiple hidden>
+                    </div>
+                    <p class="muted small">Use <strong>Select Folder</strong> if available.</p>
+                    <div class="status" id="excelStatus"></div>
+                </div>
+
+                <div>
+                    <label for="recipientColumn" class="label">Email column</label>
+                    <select id="recipientColumn" disabled>
+                        <option value="">Load Excel files first</option>
+                    </select>
+                    <p class="muted small">Choose the column with email addresses.</p>
+
+                    <details class="details compact-details">
+                        <summary>More options (optional)</summary>
+                        <div class="list" style="max-height:none;">
+                            <label for="replyToInput" class="label">Reply-To</label>
+                            <input type="text" id="replyToInput" placeholder="team@company.com">
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <details class="details">
+                <summary>Show selected file list</summary>
+                <div class="list" id="excelList"></div>
+            </details>
+        </section>
+
+        <section class="panel" id="templatePanel">
+            <div class="panel-title-row">
+                <h2>2. Write Email</h2>
+            </div>
+
+            <div class="grid two">
+                <div>
+                    <label for="subjectInput" class="label">Subject</label>
+                    <input type="text" id="subjectInput" value="Report - {{filename}}">
+                </div>
+
+                <div>
+                    <label for="bodyInput" class="label">Message</label>
+                    <textarea id="bodyInput" rows="9">Hello,
+
+Please find the attached file(s).
+
+Regards,</textarea>
+                </div>
+            </div>
+
+            <details class="details">
+                <summary>More options (CC, BCC, presets)</summary>
+                <div class="list" style="max-height:none;">
+                    <label for="toCcInput" class="label">CC</label>
+                    <input type="text" id="toCcInput" placeholder="ops@company.com; manager@company.com">
+
+                    <label for="bccInput" class="label" style="margin-top:6px;">BCC</label>
+                    <input type="text" id="bccInput" placeholder="audit@company.com">
+
+                    <div class="row-wrap" style="margin-top:6px;">
+                        <button type="button" class="btn secondary small" id="saveTemplateBtn">Save Preset</button>
+                        <button type="button" class="btn ghost small" id="loadTemplateBtn">Load Preset</button>
+                    </div>
+
+                    <details class="details compact-details">
+                        <summary>Template tokens</summary>
+                        <div class="list" style="max-height:none;">
+                            <div class="panel-title-row" style="margin-bottom:6px;">
+                                <h3>Available Template Tokens</h3>
+                                <span class="badge neutral" id="tokenBadge">Load Excel files</span>
+                            </div>
+                            <p class="muted small" style="margin:0;">Use tokens like <code>{{filename}}</code> and <code>{{today}}</code>.</p>
+                            <div class="chips" id="tokenChips"></div>
+                        </div>
+                    </details>
+                </div>
+            </details>
+        </section>
+
+        <section class="panel" id="attachmentsPanel">
+            <div class="panel-title-row">
+                <h2>3. Attachments</h2>
+                <span class="badge neutral" id="attachmentModeBadge">Configure strategy</span>
+            </div>
+            <p class="muted small" id="attachmentsHelpText">
+                Most users can leave this as-is.
+            </p>
+
+            <div class="grid two">
+                <div class="stack">
+                    <label class="checkbox">
+                        <input type="checkbox" id="attachSourceWorkbook" checked>
+                        <span>Attach the source Excel workbook itself</span>
+                    </label>
+                    <details class="details">
+                        <summary>Advanced attachment options (optional)</summary>
+                        <div class="list" style="max-height:none;">
+                            <label class="label">Additional Attachment Sources</label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="attachMatchedPreset">
+                                <span>Attach matched file(s) from an attachment pool (match by Excel filename)</span>
+                            </label>
+
+                            <label class="checkbox">
+                                <input type="checkbox" id="attachCommon">
+                                <span>Attach common file(s) to every draft</span>
+                            </label>
+
+                            <label class="label" style="margin-top: 4px;">Matched File Rule (only applies if matched files are enabled)</label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="skipOnMissingMatch" checked>
+                                <span>Skip draft if a matched file is missing</span>
+                            </label>
+
+                            <div style="margin-top: 8px;">
+                                <label class="label">Matched Attachment Pool (only if using matched files)</label>
+                                <div class="row-wrap">
+                                    <button type="button" class="btn" id="presetFolderBtn">Select Folder</button>
+                                    <button type="button" class="btn secondary" id="presetFilesBtn">Choose Files</button>
+                                    <input type="file" id="presetFilesInput" multiple hidden>
+                                </div>
+                                <div class="status" id="presetStatus"></div>
+                            </div>
+
+                            <div style="margin-top: 10px;">
+                                <label class="label">Common Attachments (optional, same for all drafts)</label>
+                                <div class="row-wrap">
+                                    <button type="button" class="btn" id="commonFolderBtn">Select Folder</button>
+                                    <button type="button" class="btn secondary" id="commonFilesBtn">Choose Files</button>
+                                    <input type="file" id="commonFilesInput" multiple hidden>
+                                </div>
+                                <div class="status" id="commonStatus"></div>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <details class="details">
+                <summary>Show extra attachment file lists</summary>
+                <div class="grid two">
+                    <div>
+                        <h3 class="details-title">Matched Preset Pool</h3>
+                        <div class="list" id="presetList"></div>
+                    </div>
+                    <div>
+                        <h3 class="details-title">Common Attachments</h3>
+                        <div class="list" id="commonList"></div>
+                    </div>
+                </div>
+            </details>
+        </section>
+
+        <section class="panel" id="reviewPanel">
+            <div class="panel-title-row">
+                <h2>4. Preview and Generate</h2>
+                <div class="row-wrap">
+                    <button type="button" class="btn success" id="buildReviewBtn">Preview</button>
+                    <button type="button" class="btn" id="generateDraftsBtn" disabled>Generate Emails</button>
+                    <button type="button" class="btn secondary" id="warningsOnlyBtn">Show Warnings Only</button>
+                </div>
+            </div>
+            <p class="muted small review-help">Press <strong>Preview</strong>. If it looks correct, press <strong>Generate Emails</strong>.</p>
+
+            <div class="progress" id="buildProgressWrap" hidden>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="buildProgressFill">0%</div>
+                </div>
+            </div>
+            <div class="status" id="buildStatus"></div>
+
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <span class="summary-label">Total files</span>
+                    <strong id="sumTotal">0</strong>
+                </div>
+                <div class="summary-card">
+                    <span class="summary-label">Ready drafts</span>
+                    <strong id="sumReady">0</strong>
+                </div>
+                <div class="summary-card optional-summary">
+                    <span class="summary-label">Skipped</span>
+                    <strong id="sumSkipped">0</strong>
+                </div>
+                <div class="summary-card optional-summary">
+                    <span class="summary-label">Warning jobs</span>
+                    <strong id="sumWarnings">0</strong>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table id="reviewTable">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Excel File</th>
+                            <th>Recipients</th>
+                            <th>Subject</th>
+                            <th>Attachments</th>
+                            <th>Warnings</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reviewRows">
+                        <tr>
+                            <td colspan="6" class="empty">Build the review table to see draft jobs.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

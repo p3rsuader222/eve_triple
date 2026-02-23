@@ -277,6 +277,63 @@
             /* Gap for icon if present (it is in HTML text) */
         }
 
+        /* Embedded replacement for legacy email generator (Tab 2) */
+        #emailer.use-modern-emailer>.info-box,
+        #emailer.use-modern-emailer>.section,
+        #emailer.use-modern-emailer>#generate2,
+        #emailer.use-modern-emailer>#progress2,
+        #emailer.use-modern-emailer>#status2,
+        #emailer.use-modern-emailer>.note {
+            display: none !important;
+        }
+
+        .embedded-emailer-shell {
+            background: var(--surface-glass);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-top: 8px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .embedded-emailer-shell h3 {
+            margin: 0 0 6px 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .embedded-emailer-shell p {
+            margin: 0 0 12px 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        .embedded-emailer-frame {
+            width: 100%;
+            min-height: 2100px;
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            background: #fff;
+        }
+
+        .embedded-emailer-fallback {
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .embedded-emailer-fallback a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .embedded-emailer-fallback a:hover {
+            text-decoration: underline;
+        }
+
         .tab:hover {
             opacity: 1;
             /* Reset opacity */
@@ -1205,7 +1262,22 @@
             </div>
 
             <!-- Tab 2: Email Generator -->
-            <div class="tab-content" id="emailer">
+            <div class="tab-content use-modern-emailer" id="emailer">
+                <div class="embedded-emailer-shell">
+                    <h3>Step 2: Generate Outlook Drafts</h3>
+                    <p>Use the new draft generator below. It creates real Outlook drafts (with the guided helper) instead of old <code>.eml</code> files.</p>
+                    <iframe
+                        class="embedded-emailer-frame"
+                        id="embeddedEmailerFrame"
+                        title="Outlook Draft Prep"
+                        src="emailer/index.html"
+                        loading="lazy">
+                    </iframe>
+                    <div class="embedded-emailer-fallback">
+                        If the panel does not load, open <a href="emailer/index.html" target="_blank" rel="noopener">the email generator in a new tab</a>.
+                    </div>
+                </div>
+
                 <div class="info-box">
                     <strong>Step 2:</strong> Generate Outlook email files from your split Excel files
                 </div>
