@@ -14,6 +14,11 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $script:FormsReady = $false
+$script:ExcelNormalizeApp = $null
+$script:ExcelNormalizeDisabled = $false
+$script:NormalizedAttachmentCache = @{}
+$script:NormalizedTempFiles = New-Object System.Collections.Generic.List[string]
+$script:NormalizedTempRoot = $null
 
 function Resolve-RequiredPath {
     param(
@@ -118,6 +123,123 @@ function New-OutlookApplication {
         return New-Object -ComObject Outlook.Application
     } catch {
         throw "Could not start Outlook COM automation. Ensure Outlook Classic is installed on this PC. $($_.Exception.Message)"
+    }
+}
+
+function Test-XlsxPath {
+    param([string]$PathValue)
+    if (Test-Blank $PathValue) { return $false }
+    $ext = [System.IO.Path]::GetExtension([string]$PathValue)
+    if ([string]::IsNullOrWhiteSpace($ext)) { return $false }
+    return $ext.Equals('.xlsx', [System.StringComparison]::OrdinalIgnoreCase)
+}
+
+function Get-ExcelNormalizationTempRoot {
+    if (-not (Test-Blank $script:NormalizedTempRoot)) {
+        return $script:NormalizedTempRoot
+    }
+    $base = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath 'OutlookDraftCreator-NormalizedXlsx'
+    if (-not (Test-Path -LiteralPath $base -PathType Container)) {
+        [void](New-Item -ItemType Directory -Path $base -Force)
+    }
+    $runDir = Join-Path -Path $base -ChildPath ([Guid]::NewGuid().ToString('N'))
+    [void](New-Item -ItemType Directory -Path $runDir -Force)
+    $script:NormalizedTempRoot = $runDir
+    return $script:NormalizedTempRoot
+}
+
+function Get-ExcelNormalizationApplication {
+    if ($script:ExcelNormalizeDisabled) { return $null }
+    if ($null -ne $script:ExcelNormalizeApp) { return $script:ExcelNormalizeApp }
+
+    try {
+        $excel = New-Object -ComObject Excel.Application
+        $excel.Visible = $false
+        $excel.DisplayAlerts = $false
+        try { $excel.ScreenUpdating = $false } catch { }
+        try { $excel.EnableEvents = $false } catch { }
+        $script:ExcelNormalizeApp = $excel
+        return $script:ExcelNormalizeApp
+    } catch {
+        Write-Warning "Excel normalization is unavailable ($($_.Exception.Message)). Attaching original .xlsx files."
+        $script:ExcelNormalizeDisabled = $true
+        return $null
+    }
+}
+
+function Get-NormalizedAttachmentPathForSend {
+    param(
+        [Parameter(Mandatory = $true)][string]$PathValue
+    )
+
+    if (-not (Test-XlsxPath -PathValue $PathValue)) {
+        return $PathValue
+    }
+
+    if ($script:NormalizedAttachmentCache.ContainsKey($PathValue)) {
+        return [string]$script:NormalizedAttachmentCache[$PathValue]
+    }
+
+    $excel = Get-ExcelNormalizationApplication
+    if ($null -eq $excel) {
+        $script:NormalizedAttachmentCache[$PathValue] = $PathValue
+        return $PathValue
+    }
+
+    $tempRoot = Get-ExcelNormalizationTempRoot
+    $baseName = [System.IO.Path]::GetFileNameWithoutExtension($PathValue)
+    if ([string]::IsNullOrWhiteSpace($baseName)) { $baseName = 'attachment' }
+    $safeBase = ($baseName -replace '[^a-zA-Z0-9._-]+', '_').Trim('_')
+    if ([string]::IsNullOrWhiteSpace($safeBase)) { $safeBase = 'attachment' }
+    if ($safeBase.Length -gt 80) { $safeBase = $safeBase.Substring(0, 80) }
+    $tempPath = Join-Path -Path $tempRoot -ChildPath ("{0}_{1}.xlsx" -f $safeBase, ([Guid]::NewGuid().ToString('N')))
+
+    $workbook = $null
+    try {
+        # Open in Excel and save a fresh copy. This produces a more canonical .xlsx that survives strict mail scanners.
+        $workbook = $excel.Workbooks.Open($PathValue, 0, $true)
+        $workbook.SaveCopyAs($tempPath)
+
+        if (-not (Test-Path -LiteralPath $tempPath -PathType Leaf)) {
+            throw "Excel did not create the normalized copy."
+        }
+
+        $script:NormalizedAttachmentCache[$PathValue] = $tempPath
+        $script:NormalizedTempFiles.Add($tempPath) | Out-Null
+        Write-Host "Normalized .xlsx for attachment: $([System.IO.Path]::GetFileName($PathValue))" -ForegroundColor DarkCyan
+        return $tempPath
+    } catch {
+        Write-Warning "Could not normalize .xlsx attachment '$PathValue'. Attaching original file. $($_.Exception.Message)"
+        $script:NormalizedAttachmentCache[$PathValue] = $PathValue
+        return $PathValue
+    } finally {
+        if ($null -ne $workbook) {
+            try { [void]$workbook.Close($false) } catch { }
+            try { [void][System.Runtime.InteropServices.Marshal]::ReleaseComObject($workbook) } catch { }
+            $workbook = $null
+        }
+    }
+}
+
+function Cleanup-ExcelNormalizationResources {
+    foreach ($tempPath in @($script:NormalizedTempFiles.ToArray())) {
+        try {
+            if (-not (Test-Blank $tempPath) -and (Test-Path -LiteralPath $tempPath -PathType Leaf)) {
+                Remove-Item -LiteralPath $tempPath -Force -ErrorAction Stop
+            }
+        } catch {
+            Write-Warning "Could not delete temp normalized file '$tempPath'. $($_.Exception.Message)"
+        }
+    }
+
+    if ($null -ne $script:ExcelNormalizeApp) {
+        try { [void]$script:ExcelNormalizeApp.Quit() } catch { }
+        try { [void][System.Runtime.InteropServices.Marshal]::ReleaseComObject($script:ExcelNormalizeApp) } catch { }
+        $script:ExcelNormalizeApp = $null
+    }
+
+    if (-not (Test-Blank $script:NormalizedTempRoot) -and (Test-Path -LiteralPath $script:NormalizedTempRoot -PathType Container)) {
+        try { Remove-Item -LiteralPath $script:NormalizedTempRoot -Force -Recurse -ErrorAction Stop } catch { }
     }
 }
 
@@ -486,9 +608,15 @@ foreach ($job in $readyJobs) {
         }
 
         $attachmentPaths = New-Object System.Collections.Generic.List[string]
+        $attachmentPathsForSend = New-Object System.Collections.Generic.List[string]
         foreach ($attachment in $attachments) {
             $resolvedPath = Resolve-AttachmentPath -Attachment $attachment -Job $job
             $attachmentPaths.Add($resolvedPath) | Out-Null
+            if ($DryRun) {
+                $attachmentPathsForSend.Add($resolvedPath) | Out-Null
+            } else {
+                $attachmentPathsForSend.Add((Get-NormalizedAttachmentPathForSend -PathValue $resolvedPath)) | Out-Null
+            }
         }
 
         if ($DryRun) {
@@ -514,7 +642,7 @@ foreach ($job in $readyJobs) {
         if ($bccList.Count -gt 0) { $mail.BCC = ($bccList -join '; ') }
         if ($replyToList.Count -gt 0) { Add-ReplyRecipients -MailItem $mail -ReplyTo $replyToList }
 
-        foreach ($path in $attachmentPaths) {
+        foreach ($path in @($attachmentPathsForSend.ToArray())) {
             [void]$mail.Attachments.Add($path)
         }
 
@@ -568,6 +696,8 @@ $resultPayload | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $resultPat
 Write-Host ""
 Write-Host "Done. Created/validated: $created | Failed: $failed" -ForegroundColor Cyan
 Write-Host "Results written to: $resultPath"
+
+Cleanup-ExcelNormalizationResources
 
 if (-not $DryRun -and $promptOpenDraftsAfterCreate -and $created -gt 0) {
     $OpenDraftsFolder = Show-OpenDraftsPromptDialog -CreatedCount $created
