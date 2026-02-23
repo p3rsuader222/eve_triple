@@ -2040,6 +2040,8 @@ function reply(obj) {
         const SPLITTER_WARN_ROWS1 = 50000;
         const SPLITTER_DISABLE_ZIP_ROWS1 = 100000;
         const SPLITTER_WARN_COLS1 = 150;
+        const SPLITTER_MAX_FILENAME_COMPONENT1 = 180;
+        const SPLITTER_WINDOWS_RESERVED_RE1 = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
 
         let sourceFile1 = null;
         let splitterZipDisabledReason1 = '';
@@ -2210,14 +2212,73 @@ function reply(obj) {
         }
 
         function sanitizeFilename(name) {
-            if (!name || name.trim() === '') return null;
-            let sanitized = String(name).trim()
+            if (name === undefined || name === null) return null;
+            let sanitized = String(name);
+            if (typeof sanitized.normalize === 'function') {
+                sanitized = sanitized.normalize('NFC');
+            }
+            sanitized = sanitized.trim();
+            if (!sanitized) return null;
+            sanitized = sanitized
+                .replace(/[\x00-\x1F\x7F]+/g, '_')
                 .replace(/[<>:"\/\\|?*]/g, '_')
+                .replace(/\s+/g, ' ')
                 .replace(/^[.\s]+|[.\s]+$/g, '');
-            if (sanitized.length > 200) {
-                sanitized = sanitized.substring(0, 200);
+            if (SPLITTER_WINDOWS_RESERVED_RE1.test(sanitized)) {
+                sanitized = `${sanitized}_file`;
+            }
+            if (sanitized.length > SPLITTER_MAX_FILENAME_COMPONENT1) {
+                sanitized = sanitized.substring(0, SPLITTER_MAX_FILENAME_COMPONENT1).replace(/[.\s]+$/g, '');
+            }
+            if (SPLITTER_WINDOWS_RESERVED_RE1.test(sanitized)) {
+                sanitized = `${sanitized}_file`;
             }
             return sanitized || null;
+        }
+
+        function buildOutputFilename1(fileBase, rowCount) {
+            const extension = '.xlsx';
+            const suffix = `_${rowCount}${extension}`;
+            const maxBaseLength = Math.max(24, SPLITTER_MAX_FILENAME_COMPONENT1 - suffix.length);
+            let safeBase = String(fileBase || '').trim();
+            if (typeof safeBase.normalize === 'function') {
+                safeBase = safeBase.normalize('NFC');
+            }
+            safeBase = safeBase.replace(/[\x00-\x1F\x7F]+/g, '_').replace(/[<>:"\/\\|?*]/g, '_').replace(/[.\s]+$/g, '');
+            if (safeBase.length > maxBaseLength) {
+                safeBase = safeBase.substring(0, maxBaseLength).replace(/[.\s]+$/g, '');
+            }
+            if (!safeBase) {
+                safeBase = 'split_output';
+            }
+            if (SPLITTER_WINDOWS_RESERVED_RE1.test(safeBase)) {
+                safeBase = `${safeBase}_file`;
+            }
+            return `${safeBase}${suffix}`;
+        }
+
+        function assignUniqueOutputFilenames1(groupEntries) {
+            const usedNames = new Set();
+            let finalNameCollisions = 0;
+
+            for (const group of groupEntries) {
+                const rowCount = Array.isArray(group.rows) ? group.rows.length : 0;
+                let candidateBase = group.fileBase;
+                let filename = buildOutputFilename1(candidateBase, rowCount);
+                let suffix = 2;
+
+                while (usedNames.has(filename.toLocaleLowerCase())) {
+                    candidateBase = `${group.fileBase}_${suffix}`;
+                    filename = buildOutputFilename1(candidateBase, rowCount);
+                    suffix++;
+                    finalNameCollisions++;
+                }
+
+                group.outputFilename = filename;
+                usedNames.add(filename.toLocaleLowerCase());
+            }
+
+            return finalNameCollisions;
         }
 
         function assessSplitterRisk1(rowCount, colCount, fileObj) {
@@ -2277,14 +2338,14 @@ function reply(obj) {
                 if (!group) {
                     let fileBase = sanitizedBase;
                     let suffix = 2;
-                    while (usedFileBases.has(fileBase.toLowerCase())) {
+                    while (usedFileBases.has(fileBase.toLocaleLowerCase())) {
                         fileBase = `${sanitizedBase}_${suffix}`;
                         suffix++;
                     }
                     if (fileBase !== sanitizedBase) {
                         filenameCollisions++;
                     }
-                    usedFileBases.add(fileBase.toLowerCase());
+                    usedFileBases.add(fileBase.toLocaleLowerCase());
                     group = { groupKey, fileBase, rows: [] };
                     groupsByKey.set(groupKey, group);
                     groupEntries.push(group);
@@ -2322,6 +2383,7 @@ function reply(obj) {
                 const headers = data1[0];
                 const rows = data1.slice(1);
                 const { groupEntries, skippedRows, filenameCollisions } = buildSplitGroups1(rows, columnIndex);
+                const outputFilenameCollisions = assignUniqueOutputFilenames1(groupEntries);
                 const totalGroups = groupEntries.length;
 
                 if (totalGroups === 0) {
@@ -2343,8 +2405,11 @@ function reply(obj) {
                 if (filenameCollisions > 0) {
                     message += ` (${filenameCollisions} filename collision${filenameCollisions === 1 ? '' : 's'} auto-renamed)`;
                 }
+                if (outputFilenameCollisions > 0) {
+                    message += ` (${outputFilenameCollisions} truncated-name collision${outputFilenameCollisions === 1 ? '' : 's'} auto-renamed)`;
+                }
 
-                showStatus1(message, filenameCollisions > 0 ? 'warning' : 'success');
+                showStatus1(message, (filenameCollisions > 0 || outputFilenameCollisions > 0) ? 'warning' : 'success');
                 progress1.classList.remove('show');
             } catch (error) {
                 showStatus1('Error processing file: ' + error.message, 'error');
@@ -2366,7 +2431,7 @@ function reply(obj) {
                 const newWorkbook = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, 'Sheet1');
 
-                const filename = `${group.fileBase}_${rowCount}.xlsx`;
+                const filename = group.outputFilename || buildOutputFilename1(group.fileBase, rowCount);
                 const wbout = XLSX.write(newWorkbook, { bookType: 'xlsx', type: 'array' });
 
                 const fileHandle = await outputHandle1.getFileHandle(filename, { create: true });
@@ -2397,7 +2462,7 @@ function reply(obj) {
                 const newWorkbook = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, 'Sheet1');
 
-                const filename = `${group.fileBase}_${rowCount}.xlsx`;
+                const filename = group.outputFilename || buildOutputFilename1(group.fileBase, rowCount);
                 const wbout = XLSX.write(newWorkbook, { bookType: 'xlsx', type: 'array' });
                 zip.file(filename, wbout);
 
