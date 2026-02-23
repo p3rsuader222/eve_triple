@@ -1015,3 +1015,59 @@ tbody td {
         min-width: 0;
     }
 }
+
+/* Embedded inside main app (Tab 2) */
+html.embed-mode {
+    --bg: transparent;
+    --panel: rgba(255, 255, 255, 0.84);
+    --panel-soft: rgba(255, 255, 255, 0.74);
+    --line: rgba(60, 60, 67, 0.12);
+    --primary: #007aff;
+    --primary-dark: #0062cc;
+    --success: #007aff;
+    --shadow: none;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+html.embed-mode body {
+    background: transparent;
+    min-height: auto;
+}
+
+html.embed-mode .shell {
+    width: 100%;
+    margin: 0;
+    gap: 8px;
+}
+
+html.embed-mode .hero {
+    display: none;
+}
+
+html.embed-mode .panel {
+    border-radius: 12px;
+    border: 1px solid rgba(60, 60, 67, 0.1);
+    background: rgba(255, 255, 255, 0.86);
+    padding: 12px;
+}
+
+html.embed-mode .panel-title-row h2 {
+    font-size: 16px;
+}
+
+html.embed-mode .subtitle,
+html.embed-mode .review-help {
+    font-size: 13px;
+}
+
+html.embed-mode .btn {
+    min-height: 40px;
+}
+
+html.embed-mode .table-wrap {
+    border-radius: 10px;
+}
+
+html.embed-mode .details {
+    margin-top: 8px;
+}

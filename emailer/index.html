@@ -6,6 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Outlook Draft Prep</title>
     <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon_munke.png">
+    <script>
+        (function () {
+            try {
+                if (new URLSearchParams(window.location.search).get('embed') === '1') {
+                    document.documentElement.classList.add('embed-mode');
+                }
+            } catch (e) { }
+        }());
+    </script>
     <link rel="stylesheet" href="styles.css">
 </head>
 

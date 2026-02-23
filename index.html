@@ -288,40 +288,52 @@
         }
 
         .embedded-emailer-shell {
-            background: var(--surface-glass);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.56));
             border: 1px solid var(--border-light);
             border-radius: var(--radius-md);
-            padding: 16px;
-            margin-top: 8px;
+            padding: 12px;
+            margin-top: 4px;
             box-shadow: var(--shadow-sm);
         }
 
+        .embedded-emailer-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
         .embedded-emailer-shell h3 {
-            margin: 0 0 6px 0;
-            font-size: 18px;
+            margin: 0;
+            font-size: 16px;
             font-weight: 700;
             color: var(--text-main);
+            letter-spacing: -0.3px;
         }
 
         .embedded-emailer-shell p {
-            margin: 0 0 12px 0;
+            margin: 0;
             color: var(--text-secondary);
-            font-size: 14px;
-            line-height: 1.45;
+            font-size: 13px;
+            line-height: 1.35;
         }
 
         .embedded-emailer-frame {
             width: 100%;
-            min-height: 2100px;
-            border: 1px solid var(--border-light);
-            border-radius: 16px;
-            background: #fff;
+            height: 1200px;
+            border: 1px solid rgba(60, 60, 67, 0.1);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.92);
+            display: block;
+            overflow: hidden;
         }
 
         .embedded-emailer-fallback {
-            margin-top: 10px;
-            font-size: 13px;
+            margin-top: 8px;
+            font-size: 12px;
             color: var(--text-secondary);
+            opacity: 0.9;
         }
 
         .embedded-emailer-fallback a {
@@ -1264,14 +1276,17 @@
             <!-- Tab 2: Email Generator -->
             <div class="tab-content use-modern-emailer" id="emailer">
                 <div class="embedded-emailer-shell">
-                    <h3>Step 2: Generate Outlook Drafts</h3>
-                    <p>Use the new draft generator below. It creates real Outlook drafts (with the guided helper) instead of old <code>.eml</code> files.</p>
+                    <div class="embedded-emailer-head">
+                        <h3>Step 2: Generate Outlook Drafts</h3>
+                        <p>Pick files → Preview → Generate</p>
+                    </div>
                     <iframe
                         class="embedded-emailer-frame"
                         id="embeddedEmailerFrame"
                         title="Outlook Draft Prep"
-                        src="emailer/index.html"
-                        loading="lazy">
+                        src="emailer/index.html?embed=1"
+                        loading="lazy"
+                        scrolling="no">
                     </iframe>
                     <div class="embedded-emailer-fallback">
                         If the panel does not load, open <a href="emailer/index.html" target="_blank" rel="noopener">the email generator in a new tab</a>.
@@ -1941,6 +1956,43 @@ function reply(obj) {
             });
         });
 
+        // Embedded emailer iframe auto-height (same-origin)
+        function resizeEmbeddedEmailerFrame() {
+            const frame = document.getElementById('embeddedEmailerFrame');
+            if (!frame) return;
+            try {
+                const doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
+                if (!doc || !doc.body || !doc.documentElement) return;
+                const height = Math.max(
+                    doc.body.scrollHeight || 0,
+                    doc.documentElement.scrollHeight || 0,
+                    doc.body.offsetHeight || 0,
+                    doc.documentElement.offsetHeight || 0
+                );
+                if (height > 0) {
+                    frame.style.height = (height + 6) + 'px';
+                }
+            } catch (error) {
+                // Ignore cross-document / loading timing issues.
+            }
+        }
+
+        const embeddedEmailerFrame = document.getElementById('embeddedEmailerFrame');
+        if (embeddedEmailerFrame) {
+            embeddedEmailerFrame.addEventListener('load', () => {
+                resizeEmbeddedEmailerFrame();
+                setTimeout(resizeEmbeddedEmailerFrame, 250);
+                setTimeout(resizeEmbeddedEmailerFrame, 1000);
+                const win = embeddedEmailerFrame.contentWindow;
+                if (win) {
+                    win.addEventListener('resize', resizeEmbeddedEmailerFrame);
+                    win.addEventListener('click', () => setTimeout(resizeEmbeddedEmailerFrame, 50));
+                    win.addEventListener('input', () => setTimeout(resizeEmbeddedEmailerFrame, 50));
+                    win.addEventListener('change', () => setTimeout(resizeEmbeddedEmailerFrame, 50));
+                }
+            });
+        }
+
         // Tab switching
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
@@ -1951,6 +2003,11 @@ function reply(obj) {
 
                 tab.classList.add('active');
                 document.getElementById(targetTab).classList.add('active');
+
+                if (targetTab === 'emailer') {
+                    setTimeout(resizeEmbeddedEmailerFrame, 50);
+                    setTimeout(resizeEmbeddedEmailerFrame, 300);
+                }
             });
         });
 
