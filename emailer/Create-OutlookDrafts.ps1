@@ -187,12 +187,13 @@ function Get-NormalizedAttachmentPathForSend {
     }
 
     $tempRoot = Get-ExcelNormalizationTempRoot
-    $baseName = [System.IO.Path]::GetFileNameWithoutExtension($PathValue)
-    if ([string]::IsNullOrWhiteSpace($baseName)) { $baseName = 'attachment' }
-    $safeBase = ($baseName -replace '[^a-zA-Z0-9._-]+', '_').Trim('_')
-    if ([string]::IsNullOrWhiteSpace($safeBase)) { $safeBase = 'attachment' }
-    if ($safeBase.Length -gt 80) { $safeBase = $safeBase.Substring(0, 80) }
-    $tempPath = Join-Path -Path $tempRoot -ChildPath ("{0}_{1}.xlsx" -f $safeBase, ([Guid]::NewGuid().ToString('N')))
+    $originalFileName = [System.IO.Path]::GetFileName($PathValue)
+    if ([string]::IsNullOrWhiteSpace($originalFileName)) {
+        $originalFileName = 'attachment.xlsx'
+    }
+    $uniqueDir = Join-Path -Path $tempRoot -ChildPath ([Guid]::NewGuid().ToString('N'))
+    [void](New-Item -ItemType Directory -Path $uniqueDir -Force)
+    $tempPath = Join-Path -Path $uniqueDir -ChildPath $originalFileName
 
     $workbook = $null
     try {
@@ -608,15 +609,27 @@ foreach ($job in $readyJobs) {
         }
 
         $attachmentPaths = New-Object System.Collections.Generic.List[string]
-        $attachmentPathsForSend = New-Object System.Collections.Generic.List[string]
+        $attachmentItemsForSend = New-Object System.Collections.Generic.List[object]
         foreach ($attachment in $attachments) {
             $resolvedPath = Resolve-AttachmentPath -Attachment $attachment -Job $job
             $attachmentPaths.Add($resolvedPath) | Out-Null
-            if ($DryRun) {
-                $attachmentPathsForSend.Add($resolvedPath) | Out-Null
-            } else {
-                $attachmentPathsForSend.Add((Get-NormalizedAttachmentPathForSend -PathValue $resolvedPath)) | Out-Null
+            $displayName = [string]$attachment.fileName
+            if (Test-Blank $displayName) {
+                $displayName = [System.IO.Path]::GetFileName($resolvedPath)
             }
+
+            $pathForSend = $resolvedPath
+            if ($DryRun) {
+                $pathForSend = $resolvedPath
+            } else {
+                $pathForSend = Get-NormalizedAttachmentPathForSend -PathValue $resolvedPath
+            }
+
+            $attachmentItemsForSend.Add([pscustomobject]@{
+                    OriginalPath = $resolvedPath
+                    PathForSend  = $pathForSend
+                    DisplayName  = $displayName
+                }) | Out-Null
         }
 
         if ($DryRun) {
@@ -642,8 +655,14 @@ foreach ($job in $readyJobs) {
         if ($bccList.Count -gt 0) { $mail.BCC = ($bccList -join '; ') }
         if ($replyToList.Count -gt 0) { Add-ReplyRecipients -MailItem $mail -ReplyTo $replyToList }
 
-        foreach ($path in @($attachmentPathsForSend.ToArray())) {
-            [void]$mail.Attachments.Add($path)
+        foreach ($attachmentItem in @($attachmentItemsForSend.ToArray())) {
+            $sendPath = [string]$attachmentItem.PathForSend
+            $displayName = [string]$attachmentItem.DisplayName
+            if (Test-Blank $displayName) {
+                [void]$mail.Attachments.Add($sendPath)
+            } else {
+                [void]$mail.Attachments.Add($sendPath, [Type]::Missing, [Type]::Missing, $displayName)
+            }
         }
 
         # Save as draft in the user's default Drafts folder for visual review/send.
