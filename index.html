@@ -705,7 +705,7 @@
             border-bottom: 2px solid #cbd5e1;
             transform: translateY(-50%) rotate(-45deg);
             /* Point left/neutral initially? or Down? Let's say closed = right? */
-            /* Current arrow was right arrow â–¶. Let's make it a chevron pointing right. */
+            /* Current arrow was right arrow ▶. Let's make it a chevron pointing right. */
             /* Rotate -45deg makes it point Right if borders are right/bottom */
             transition: transform 0.3s ease;
         }
@@ -1185,16 +1185,16 @@
 
         <div class="tabs">
             <div class="tab active" data-tab="splitter">
-                ðŸ”€ Split by Criteria
+                🔀 Split by Criteria
             </div>
             <div class="tab" data-tab="emailer">
-                ðŸ“§ Generate Emails
+                📧 Generate Emails
             </div>
             <div class="tab" data-tab="gsync">
-                ðŸ”„ Sheets Sync
+                🔄 Sheets Sync
             </div>
             <div class="tab" data-tab="knowledge">
-                ðŸ“š Knowledge Base
+                📚 Knowledge Base
             </div>
         </div>
 
@@ -1206,7 +1206,7 @@
                 </div>
 
                 <div class="upload-area" id="uploadArea1">
-                    <div class="upload-icon">ðŸ“‚</div>
+                    <div class="upload-icon">📂</div>
                     <p style="margin-bottom: 10px; color: #666;"><strong>Click to upload</strong> or drag and drop</p>
                     <p style="font-size: 14px; color: #999;">Excel files (.xlsx) only</p>
                     <input type="file" id="fileInput1" accept=".xlsx">
@@ -1218,7 +1218,7 @@
                 </div>
 
                 <div class="section hidden" id="sheetSelector1Container">
-                    <div class="section-title">ðŸ“‘ Select Excel Sheet</div>
+                    <div class="section-title">📑 Select Excel Sheet</div>
                     <label for="excelSheetSelect1">Choose the worksheet to split:</label>
                     <select id="excelSheetSelect1">
                         <!-- Options populated by JS -->
@@ -1234,7 +1234,7 @@
                 </div>
 
                 <div class="section hidden" id="outputSection1">
-                    <label>ðŸ“‚ Output Location:</label>
+                    <label>📂 Output Location:</label>
                     <p style="font-size: 14px; color: #666; margin-bottom: 10px;">Choose where to save the split files
                     </p>
                     <button class="btn secondary" id="selectFolder1">Select Output Folder</button>
@@ -1256,7 +1256,7 @@
                 <div class="status" id="status1"></div>
 
                 <div class="note">
-                    <strong>ðŸ’¡ Next Step:</strong> After splitting, switch to the "Generate Emails" tab to create email
+                    <strong>💡 Next Step:</strong> After splitting, switch to the "Generate Emails" tab to create email
                     drafts for each file.
                 </div>
             </div>
@@ -1283,7 +1283,7 @@
                 </div>
 
                 <div class="section">
-                    <div class="section-title">ðŸ“ Select Excel Files Folder</div>
+                    <div class="section-title">📁 Select Excel Files Folder</div>
                     <button class="btn" id="selectInput2">Select Folder with Excel Files</button>
                     <!-- Fallback file input -->
                     <input type="file" id="fallbackInput2" multiple accept=".xlsx" style="display: none;">
@@ -1292,7 +1292,7 @@
                 </div>
 
                 <div class="section hidden" id="emailConfig2">
-                    <div class="section-title">âœ‰ï¸ Configure Email Template</div>
+                    <div class="section-title">✉️ Configure Email Template</div>
 
                     <label for="emailSubject2">Subject Line:</label>
                     <input type="text" id="emailSubject2" placeholder="e.g., Company Report - {{filename}}"
@@ -1317,7 +1317,7 @@ Best regards</textarea>
                 </div>
 
                 <div class="section hidden" id="outputSection2">
-                    <div class="section-title">ðŸ’¾ Select Output Folder</div>
+                    <div class="section-title">💾 Select Output Folder</div>
                     <button class="btn secondary" id="selectOutput2">Select Output Folder for Email Files</button>
                     <div class="folder-info" id="outputFolder2"></div>
                 </div>
@@ -1334,31 +1334,31 @@ Best regards</textarea>
                 <div class="status" id="status2"></div>
 
                 <div class="note">
-                    <strong>ðŸ’¡ Tips:</strong><br>
-                    â€¢ Use {{filename}} in subject to include the Excel filename<br>
-                    â€¢ Email files (.eml) will open in Outlook when double-clicked<br>
-                    â€¢ All recipients from the Excel file will be in the "To:" field
+                    <strong>💡 Tips:</strong><br>
+                    • Use {{filename}} in subject to include the Excel filename<br>
+                    • Email files (.eml) will open in Outlook when double-clicked<br>
+                    • All recipients from the Excel file will be in the "To:" field
                 </div>
             </div>
 
             <!-- Tab 3: Google Sheets Sync -->
             <div class="tab-content" id="gsync">
                 <div class="info-box">
-                    <strong>ðŸ”„ Excel to Google Sheets Sync:</strong> Import specific columns from Excel to your Google
+                    <strong>🔄 Excel to Google Sheets Sync:</strong> Import specific columns from Excel to your Google
                     Sheet with custom column mapping
                 </div>
 
                 <!-- Web App URL Section -->
                 <div class="section"
                     style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 20px; border-radius: 8px;">
-                    <div class="section-title" style="color: white;">âš™ï¸ Google Apps Script Web App URL</div>
+                    <div class="section-title" style="color: white;">⚙️ Google Apps Script Web App URL</div>
                     <p style="margin-bottom: 15px; opacity: 0.95; font-size: 14px; line-height: 1.5;">
                         This app uses a simple Google Apps Script to write to your sheets.
                         <strong style="color: white;">Need Setup Help?</strong>
                         <span style="text-decoration: underline; cursor: pointer; font-weight: 600;"
                             onclick="document.querySelector('.tab[data-tab=\'knowledge\']').click()">Check the Knowledge
                             Base</span>
-                        for the "Google Sheets Sync â€” Complete Setup Guide".
+                        for the "Google Sheets Sync — Complete Setup Guide".
                     </p>
                     <input type="text" id="webAppUrl4" placeholder="Paste your Google Apps Script Web App URL here"
                         style="width: 100%; padding: 12px; border-radius: 6px; border: none; font-size: 14px;">
@@ -1370,7 +1370,7 @@ Best regards</textarea>
 
                 <!-- Google Sheets Configuration -->
                 <div class="section">
-                    <div class="section-title">ðŸ“Š Google Sheets Configuration</div>
+                    <div class="section-title">📊 Google Sheets Configuration</div>
 
                     <label for="sheetsUrl4">Google Sheets URL or ID:</label>
                     <input type="text" id="sheetsUrl4"
@@ -1383,7 +1383,7 @@ Best regards</textarea>
                 <!-- Excel File Upload (Compact) -->
                 <div class="section">
                     <div class="upload-area compact" id="uploadArea4">
-                        <div class="upload-icon">ðŸ“‚</div>
+                        <div class="upload-icon">📂</div>
                         <div style="flex-grow: 1;">
                             <p style="color: #334155; font-weight: 500;"><strong>Click to upload Excel file</strong></p>
                             <p style="font-size: 13px; color: #64748b;">.xlsx files only</p>
@@ -1399,7 +1399,7 @@ Best regards</textarea>
                     <div id="sheetSelector4Container" class="hidden"
                         style="margin-top: 15px; border-top: 1px dashed var(--border-light); padding-top: 15px;">
                         <label for="excelSheetSelect4"
-                            style="font-weight: 600; font-size: 14px; margin-bottom: 8px; display: block;">ðŸ“‘ Select
+                            style="font-weight: 600; font-size: 14px; margin-bottom: 8px; display: block;">📑 Select
                             Excel Sheet</label>
                         <select id="excelSheetSelect4"
                             style="width: 100%; padding: 10px; font-size: 14px; margin-bottom: 0;">
@@ -1412,12 +1412,12 @@ Best regards</textarea>
 
                 <!-- Sync Mode & Options -->
                 <div class="section hidden" id="modeSection4">
-                    <div class="section-title">âœï¸ Import Configuration</div>
+                    <div class="section-title">✏️ Import Configuration</div>
 
                     <div class="mode-selection-grid" style="margin-bottom: 20px;">
                         <label class="mode-card selected">
                             <input type="radio" name="importMode4" id="modeAppend4" value="append" checked>
-                            <div class="mode-icon">âž•</div>
+                            <div class="mode-icon">➕</div>
                             <div class="mode-details">
                                 <span class="mode-title">Append</span>
                                 <span class="mode-desc">Add after existing data</span>
@@ -1426,7 +1426,7 @@ Best regards</textarea>
 
                         <label class="mode-card">
                             <input type="radio" name="importMode4" id="modeOverwrite4" value="overwrite">
-                            <div class="mode-icon">ðŸ”„</div>
+                            <div class="mode-icon">🔄</div>
                             <div class="mode-details">
                                 <span class="mode-title">Overwrite</span>
                                 <span class="mode-desc">Replace existing data</span>
@@ -1438,7 +1438,7 @@ Best regards</textarea>
                         style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: rgba(0,0,0,0.02); padding: 15px; border-radius: 12px; border: 1px solid var(--border-light);">
                         <div>
                             <label for="startRow4"
-                                style="font-weight: 600; font-size: 14px; margin-bottom: 8px; display: block;">ðŸ“ Start
+                                style="font-weight: 600; font-size: 14px; margin-bottom: 8px; display: block;">📍 Start
                                 Row (Optional)</label>
                             <input type="number" id="startRow4" placeholder="Auto-detect" min="1"
                                 style="margin-bottom: 0; padding: 10px;">
@@ -1446,7 +1446,7 @@ Best regards</textarea>
                                 append at bottom or overwrite from top.</p>
                         </div>
                         <div style="display: flex; flex-direction: column; justify-content: flex-start;">
-                            <label style="font-weight: 600; font-size: 14px; margin-bottom: 12px; display: block;">ðŸ“„
+                            <label style="font-weight: 600; font-size: 14px; margin-bottom: 12px; display: block;">📄
                                 Data Handling</label>
                             <label
                                 style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
@@ -1462,15 +1462,15 @@ Best regards</textarea>
 
                 <!-- Column Mapping -->
                 <div class="section hidden" id="mappingSection4">
-                    <div class="section-title">ðŸ”— Column Mapping</div>
+                    <div class="section-title">🔗 Column Mapping</div>
                     <p style="color: #666; margin-bottom: 15px;">Map Excel columns to Google Sheets columns. Use column
                         letters (A, B, C...) for Google Sheets destination.</p>
 
                     <div class="column-mapping-container">
                         <div class="mapping-header">
-                            <span>ðŸ“— Excel Column</span>
+                            <span>📗 Excel Column</span>
                             <span></span>
-                            <span>ðŸ“Š Google Sheets Column</span>
+                            <span>📊 Google Sheets Column</span>
                             <span></span>
                         </div>
                         <div id="mappingRows4">
@@ -1481,7 +1481,7 @@ Best regards</textarea>
                 </div>
 
                 <!-- Sync Button -->
-                <button class="btn success hidden" id="syncBtn4">ðŸš€ Sync to Google Sheets</button>
+                <button class="btn success hidden" id="syncBtn4">🚀 Sync to Google Sheets</button>
 
                 <div class="progress" id="progress4">
                     <p style="margin-bottom: 10px; color: #666;">Syncing data...</p>
@@ -1493,19 +1493,19 @@ Best regards</textarea>
                 <div class="status" id="status4"></div>
 
                 <div class="note">
-                    <strong>ðŸ’¡ Need Setup Help?</strong> check the <strong>Knowledge Base</strong> (Tab 4) for the
-                    "Google Sheets Sync â€” Complete Setup Guide".
+                    <strong>💡 Need Setup Help?</strong> check the <strong>Knowledge Base</strong> (Tab 4) for the
+                    "Google Sheets Sync — Complete Setup Guide".
                 </div>
             </div>
 
             <!-- Tab 4: Knowledge Base -->
             <div class="tab-content" id="knowledge">
                 <div class="info-box">
-                    <strong>ðŸ“š Knowledge Base:</strong> Browse guides and documentation for using this app
+                    <strong>📚 Knowledge Base:</strong> Browse guides and documentation for using this app
                 </div>
 
                 <div class="kb-search">
-                    <input type="text" id="kbSearch" placeholder="ðŸ” Search topics...">
+                    <input type="text" id="kbSearch" placeholder="🔍 Search topics...">
                 </div>
 
                 <div id="kbTopics">
@@ -1520,13 +1520,13 @@ Best regards</textarea>
         // To add a new topic, simply copy one of the objects below and modify it
         const knowledgeBaseTopics = [
             {
-                icon: "âœ‚ï¸",
-                title: "Excel Splitter â€” User Guide",
+                icon: "✂️",
+                title: "Excel Splitter — User Guide",
                 content: `
-                    <h3>ðŸ“‹ Overview</h3>
+                    <h3>📋 Overview</h3>
                     <p>The <strong>Excel Splitter</strong> (Tab 1) takes a large "Master File" and breaks it into smaller, separate Excel files based on a column you choose (e.g., splitting a Sales Report by "Manager" or "Region").</p>
 
-                    <h3>ðŸ“ Step-by-Step Instructions</h3>
+                    <h3>📝 Step-by-Step Instructions</h3>
                     <ol>
                         <li><strong>Select Master File:</strong> Click the folder icon to choose your main Excel file.</li>
                         <li><strong>Choose Split Column:</strong> The app will read your headers. Select the specific column you want to group by (e.g., "Department").
@@ -1542,7 +1542,7 @@ Best regards</textarea>
                         <li><strong>Generate:</strong> Click <strong>Split Files</strong>. The progress bar will show the status.</li>
                     </ol>
 
-                    <h3>ðŸ’¡ Pro Tips</h3>
+                    <h3>💡 Pro Tips</h3>
                     <ul>
                         <li><strong>Formatted Tables:</strong> The app tries to preserve your original table styles and headers.</li>
                         <li><strong>Large Files:</strong> For very large files, give the app a moment to process. It handles thousands of rows in seconds.</li>
@@ -1550,12 +1550,12 @@ Best regards</textarea>
                 `
             },
             {
-                icon: "ðŸ“§",
-                title: "Excel Emailer â€” User Guide",
+                icon: "📧",
+                title: "Excel Emailer — User Guide",
             },
             {
-                icon: "âš¡",
-                title: "Ultimate Excel Power Query Guide â€” Fully Detailed & Commercial Ready",
+                icon: "⚡",
+                title: "Ultimate Excel Power Query Guide — Fully Detailed & Commercial Ready",
                 content: `
                     <h3>Overview</h3>
                     <p>The <strong>Email Generator</strong> (Tab 2) now prepares <strong>real Outlook drafts</strong> using a guided helper script. It no longer generates <code>.eml</code> files.</p>
@@ -1604,22 +1604,22 @@ Best regards</textarea>
             },
 
             {
-                icon: "âš¡",
-                title: "Power Query â€” Automating Combined Reports",
+                icon: "⚡",
+                title: "Power Query — Automating Combined Reports",
                 content: `
-                    <h3>ðŸ“‹ Overview</h3>
+                    <h3>📋 Overview</h3>
                     <p>Learn how to combine multiple Excel files (from the Splitter) into one master report using Power Query. This setup updates automatically when you add new files!</p>
                 `
             },
 
             {
-                icon: "ðŸ”„",
-                title: "Google Sheets Sync â€” Complete Setup Guide",
+                icon: "🔄",
+                title: "Google Sheets Sync — Complete Setup Guide",
                 content: `
-                    <h3>ðŸ“‹ Overview</h3>
+                    <h3>📋 Overview</h3>
                     <p>The <strong>Sheets Sync</strong> feature allows you to import specific columns from Excel files directly into your Google Sheets. You can map individual columns to different positions, choose to append or overwrite data, and work with shared spreadsheets.</p>
                     
-                    <h3>ðŸ”§ Part 1: Setting Up Google Apps Script (One-Time Setup)</h3>
+                    <h3>🔧 Part 1: Setting Up Google Apps Script (One-Time Setup)</h3>
                     <p>To bypass complex authentication, we'll create a tiny "helper script" attached to your Google Sheet. this takes about 2 minutes.</p>
                     
                     <h3>Step 1: Open Your Google Sheet</h3>
@@ -1735,7 +1735,7 @@ function reply(obj) {
                         <li>Keep this URL safe!</li>
                     </ol>
 
-                    <h3>ðŸš€ Part 2: Using the Sheets Sync Feature</h3>
+                    <h3>🚀 Part 2: Using the Sheets Sync Feature</h3>
                     
                     <h3>Step 1: Enter Web App URL</h3>
                     <ol>
@@ -1749,7 +1749,7 @@ function reply(obj) {
                         <li>Map columns and click Sync!</li>
                     </ol>
                     
-                    <h3>ðŸ“Š Part 2: Prepare Your Google Sheet</h3>
+                    <h3>📊 Part 2: Prepare Your Google Sheet</h3>
                     
                     <h3>Step 1: Open or Create Your Google Sheet</h3>
                     <ol>
@@ -1763,11 +1763,11 @@ function reply(obj) {
                         <li>Look at your browser's address bar</li>
                         <li>The URL looks like: <code>https://docs.google.com/spreadsheets/d/ABC123xyz789/edit</code></li>
                         <li>The part between <code>/d/</code> and <code>/edit</code> is your <strong>Spreadsheet ID</strong></li>
-                        <li>You can copy either the full URL or just the ID â€” the app accepts both!</li>
+                        <li>You can copy either the full URL or just the ID — the app accepts both!</li>
                     </ol>
                     <p><em>Note: With this Web App method, your sheet remains private! Only the script (running as you) can access it.</em></p>
                     
-                    <h3>ðŸš€ Part 3: Using the Sheets Sync Feature</h3>
+                    <h3>🚀 Part 3: Using the Sheets Sync Feature</h3>
                     
                     <h3>Step 1: Enter Web App URL</h3>
                     <ol>
@@ -1780,10 +1780,10 @@ function reply(obj) {
                         <li>Enter your <strong>Google Sheets URL or ID</strong> in the next field.</li>
                         <li>Enter the <strong>Sheet Name</strong> (tab name) exactly as it appears.</li>
                         <li>Upload your Excel file and map the columns.</li>
-                        <li>Click <strong>"ðŸš€ Sync to Google Sheets"</strong>.</li>
+                        <li>Click <strong>"🚀 Sync to Google Sheets"</strong>.</li>
                     </ol>
                     
-                    <h3>â“ Troubleshooting Common Issues</h3>
+                    <h3>❓ Troubleshooting Common Issues</h3>
                     
                     <p><strong>Error: "Invalid URL" or Sync fails immediately</strong></p>
                     <ul>
@@ -1811,14 +1811,14 @@ function reply(obj) {
                         <li>Column letters are case-insensitive (a = A)</li>
                     </ul>
                     
-                    <h3>ðŸ’¡ Pro Tips</h3>
+                    <h3>💡 Pro Tips</h3>
                     <ul>
-                        <li>Save your Web App URL in a secure place â€” you'll need it each time</li>
+                        <li>Save your Web App URL in a secure place — you'll need it each time</li>
                         <li>The Web App URL acts like a password for writing to your sheet, so don't share it publicly</li>
                         <li>Test with a small Excel file first before syncing large datasets</li>
                         <li>The app skips the first row of Excel (assumes it's a header row)</li>
                         <li>Empty cells in Excel are transferred as empty cells in Google Sheets</li>
-                        <li>You can sync to any column position â€” they don't need to be consecutive</li>
+                        <li>You can sync to any column position — they don't need to be consecutive</li>
                     </ul>
                 `
             },
@@ -1826,7 +1826,7 @@ function reply(obj) {
             // TO ADD A NEW TOPIC: Copy the template below, uncomment it, and fill in your content
             /*
             {
-                icon: "ðŸŽ¯",  // Choose an emoji icon
+                icon: "🎯",  // Choose an emoji icon
                 title: "Your Topic Title Here",
                 content: `
                     <h3>Section Heading</h3>
@@ -2140,7 +2140,7 @@ function reply(obj) {
         async function selectOutputFolder1() {
             try {
                 outputHandle1 = await window.showDirectoryPicker();
-                folderName1.textContent = `âœ“ Selected: ${outputHandle1.name}`;
+                folderName1.textContent = `✓ Selected: ${outputHandle1.name}`;
                 buttonGroup1.classList.remove('hidden');
                 processFolder1.style.display = 'block';
                 processZip1.style.display = 'block';
@@ -2279,7 +2279,7 @@ function reply(obj) {
                     await processToZip1(groupEntries, headers);
                 }
 
-                let message = `âœ“ Successfully created ${totalGroups} file(s)`;
+                let message = `✓ Successfully created ${totalGroups} file(s)`;
                 if (skippedRows > 0) {
                     message += ` (${skippedRows} rows with empty values were skipped)`;
                 }
@@ -2406,7 +2406,7 @@ function reply(obj) {
             if ('showDirectoryPicker' in window) {
                 try {
                     inputHandle2 = await window.showDirectoryPicker();
-                    inputFolder2.textContent = `âœ“ Selected: ${inputHandle2.name}`;
+                    inputFolder2.textContent = `✓ Selected: ${inputHandle2.name}`;
                     await loadExcelFiles2();
                 } catch (error) {
                     if (error.name === 'AbortError') return;
@@ -2437,7 +2437,7 @@ function reply(obj) {
             const files = Array.from(e.target.files);
             if (files.length > 0) {
                 useFallbackMode2 = true;
-                inputFolder2.textContent = `âœ“ Selected: ${files.length} file(s)`;
+                inputFolder2.textContent = `✓ Selected: ${files.length} file(s)`;
 
                 // Wrap files to look like handles
                 excelFiles2 = files.map(f => ({
@@ -2482,7 +2482,7 @@ function reply(obj) {
             excelFiles2.forEach(entry => {
                 const fileItem = document.createElement('div');
                 fileItem.className = 'file-item';
-                fileItem.textContent = `ðŸ“„ ${entry.name}`;
+                fileItem.textContent = `📄 ${entry.name}`;
                 fileList2.appendChild(fileItem);
             });
 
@@ -2529,7 +2529,7 @@ function reply(obj) {
         async function selectOutputFolder2() {
             try {
                 outputHandle2 = await window.showDirectoryPicker();
-                outputFolder2.textContent = `âœ“ Selected: ${outputHandle2.name}`;
+                outputFolder2.textContent = `✓ Selected: ${outputHandle2.name}`;
                 if (emailColumn2.value !== '') {
                     generate2.disabled = false;
                 }
@@ -2637,7 +2637,7 @@ function reply(obj) {
                     link.click();
                 }
 
-                showStatus2(`âœ“ Successfully created ${processed} email file(s)${isZipMode ? ' (ZIP)' : ''}`, 'success');
+                showStatus2(`✓ Successfully created ${processed} email file(s)${isZipMode ? ' (ZIP)' : ''}`, 'success');
                 progress2.classList.remove('show');
             } catch (error) {
                 showStatus2('Error generating emails: ' + error.message, 'error');
@@ -2908,7 +2908,7 @@ function reply(obj) {
 
             const arrowDiv = document.createElement('div');
             arrowDiv.className = 'arrow';
-            arrowDiv.textContent = 'â†’';
+            arrowDiv.textContent = '→';
 
             const sheetsInput = document.createElement('input');
             sheetsInput.type = 'text';
@@ -2920,7 +2920,7 @@ function reply(obj) {
 
             const removeBtn = document.createElement('button');
             removeBtn.className = 'remove-mapping';
-            removeBtn.textContent = 'âœ•';
+            removeBtn.textContent = '✕';
             removeBtn.onclick = function () { removeMappingRow4(mappingId); };
 
             row.appendChild(excelColDiv);
@@ -3063,7 +3063,7 @@ function reply(obj) {
 
                 // Warn about large data size
                 if (dataRows.length > 5000) {
-                    const proceed = confirm(`âš ï¸ Large Dataset Detected (${dataRows.length} rows)\n\nGoogle Apps Script may timeout with this much data (>5000 rows). It's recommended to split your data or sync in smaller batches.\n\nDo you want to try anyway?`);
+                    const proceed = confirm(`⚠️ Large Dataset Detected (${dataRows.length} rows)\n\nGoogle Apps Script may timeout with this much data (>5000 rows). It's recommended to split your data or sync in smaller batches.\n\nDo you want to try anyway?`);
                     if (!proceed) {
                         syncBtn4.disabled = false;
                         progress4.classList.remove('show');
@@ -3097,7 +3097,7 @@ function reply(obj) {
                 progressFill4.style.width = '100%';
                 progressFill4.textContent = '100%';
 
-                showStatus4(`âœ“ Data sent to Google Sheets!\n\nMode: ${modeText}\nSheet: ${targetSheetName}\nRows sent: ${dataRows.length}`, 'success');
+                showStatus4(`✓ Data sent to Google Sheets!\n\nMode: ${modeText}\nSheet: ${targetSheetName}\nRows sent: ${dataRows.length}`, 'success');
 
                 // SAVE SETTINGS TO LOCAL STORAGE ON SUCCESS
                 localStorage.setItem('eve_webAppUrl', webAppUrl);
