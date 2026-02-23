@@ -1567,10 +1567,6 @@ Best regards</textarea>
             {
                 icon: "📧",
                 title: "Excel Emailer — User Guide",
-            },
-            {
-                icon: "⚡",
-                title: "Ultimate Excel Power Query Guide — Fully Detailed & Commercial Ready",
                 content: `
                     <h3>Overview</h3>
                     <p>The <strong>Email Generator</strong> (Tab 2) now prepares <strong>real Outlook drafts</strong> using a guided helper script. It no longer generates <code>.eml</code> files.</p>
@@ -1620,10 +1616,130 @@ Best regards</textarea>
 
             {
                 icon: "⚡",
-                title: "Power Query — Automating Combined Reports",
+                title: "Ultimate Excel Power Query Guide — Fully Detailed & Commercial Ready",
                 content: `
-                    <h3>📋 Overview</h3>
-                    <p>Learn how to combine multiple Excel files (from the Splitter) into one master report using Power Query. This setup updates automatically when you add new files!</p>
+                    <h3>1️⃣ Open a new workbook</h3>
+                    <ol>
+                        <li>Open <strong>Excel</strong></li>
+                        <li>Click <strong>Blank Workbook</strong></li>
+                    </ol>
+                    
+                    <h3>2️⃣ Load all files from a folder</h3>
+                    <ol>
+                        <li>Top menu → <strong>Data</strong> tab</li>
+                        <li>Click <strong>Get Data → From File → From Folder</strong></li>
+                        <li>In the popup → <strong>Browse</strong>, select your folder → <strong>OK</strong></li>
+                        <li>Folder dialog shows all files → click <strong>Combine → Combine & Transform Data</strong></li>
+                        <li>Power Query Editor opens automatically</li>
+                    </ol>
+                    <p><em>You now have your "sample file" and the "combined query" (<code>Export</code>) in the left panel.</em></p>
+                    
+                    <h3>3️⃣ Stop automatic type guessing</h3>
+                    <ol>
+                        <li>Left panel → click <strong>Export</strong> (final combined query)</li>
+                        <li>Right panel → <strong>Applied Steps → find "Changed Type" → click ❌</strong></li>
+                    </ol>
+                    <p><em>This prevents decimals from being corrupted (e.g., <code>0,1</code> → <code>1</code>).</em></p>
+                    
+                    <h3>4️⃣ Fix decimal numbers (optional)</h3>
+                    <ol>
+                        <li>Click the header of columns you want to fix (e.g., <code>m</code> and <code>n</code>)</li>
+                        <li>Top menu → <strong>Transform tab → Replace Values</strong>
+                            <ul>
+                                <li>Value to Find: <code>,</code></li>
+                                <li>Replace With: <code>.</code></li>
+                                <li>Click <strong>OK</strong></li>
+                            </ul>
+                        </li>
+                        <li>With the same columns selected → <strong>Transform tab → Data Type → Decimal Number</strong></li>
+                    </ol>
+                    <p><em>Numbers like <code>0,1</code> → <code>0.1</code> and <code>0,13</code> → <code>0.13</code>.</em></p>
+                    
+                    <h3>5️⃣ Add calculated/validation columns</h3>
+                    <p><strong>A) Check if N &lt; M</strong></p>
+                    <ol>
+                        <li>Top menu → <strong>Add Column tab → Custom Column</strong></li>
+                        <li>Popup opens:
+                            <ul>
+                                <li><strong>New column name:</strong> <code>Check_N_lt_M</code></li>
+                                <li><strong>Custom column formula:</strong><br>
+                                <code>if [N] = null or [M] = null then "Missing" else if [N] &lt; [M] then "Yes" else "No"</code></li>
+                            </ul>
+                        </li>
+                        <li>Click <strong>OK</strong></li>
+                        <li>Drag column <strong>after N</strong> (or right-click → Move → Left/Right)</li>
+                    </ol>
+                    
+                    <p><strong>B) Sum of E + F</strong></p>
+                    <ol>
+                        <li>Add Column tab → <strong>Custom Column</strong></li>
+                        <li>Name: <code>Sum_EF</code></li>
+                        <li>Formula:<br>
+                        <code>(if [E] = null then 0 else [E]) + (if [F] = null then 0 else [F])</code></li>
+                        <li>Click <strong>OK</strong></li>
+                        <li>Drag the column <strong>after F</strong></li>
+                    </ol>
+                    <p><em>Formulas now handle blanks safely.</em></p>
+                    
+                    <h3>6️⃣ Grouping / Aggregation — Average Price per Seller</h3>
+                    <ol>
+                        <li>Ensure your <strong>Price column</strong> is numeric: select → <strong>Transform tab → Data Type → Decimal Number</strong></li>
+                        <li>Select the column identifying the seller (e.g., <code>Seller</code>)</li>
+                        <li>Top menu → <strong>Transform tab → Group By</strong></li>
+                        <li>In the <strong>Group By</strong> dialog:
+                            <ul>
+                                <li><strong>Group by:</strong> <code>Seller</code></li>
+                                <li><strong>Operation:</strong> <strong>Average</strong></li>
+                                <li><strong>Column:</strong> <code>Price</code></li>
+                                <li><strong>New column name:</strong> <code>AveragePrice</code></li>
+                            </ul>
+                        </li>
+                        <li>Click <strong>OK</strong></li>
+                        <li>Optional: add other aggregates like <strong>Count of Products</strong>, <strong>Max/Min Price</strong></li>
+                    </ol>
+                    <p><em>PQ creates one row per seller with the average price of all their products.</em></p>
+                    
+                    <h3>7️⃣ Arrange columns visually</h3>
+                    <ul>
+                        <li>Drag-and-drop headers in the main table to reorder</li>
+                        <li>OR Home tab → <strong>Manage Columns → Choose Columns</strong> → drag to reorder → <strong>OK</strong></li>
+                        <li>Formulas remain intact because PQ references <strong>column names</strong>, not positions.</li>
+                    </ul>
+                    
+                    <h3>8️⃣ Load final table into Excel</h3>
+                    <ol>
+                        <li>Top menu → <strong>Home tab → Close & Load → Close & Load To…</strong></li>
+                        <li>Choose where to place your table (e.g., existing worksheet or new worksheet) → <strong>OK</strong></li>
+                        <li>Excel now shows:
+                            <ul>
+                                <li>Original columns with decimals preserved</li>
+                                <li><code>Check_N_lt_M</code> after <code>N</code></li>
+                                <li><code>Sum_EF</code> after <code>F</code></li>
+                                <li>Optional grouped summary per seller</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    
+                    <h3>9️⃣ Set up a reusable "template" query</h3>
+                    <ol>
+                        <li>Keep this workbook saved as a template</li>
+                        <li>Optional: rename query → <code>Combined_Files_Template</code></li>
+                        <li>When adding new files:
+                            <ul>
+                                <li>Save new Excel files <strong>in the same folder</strong></li>
+                                <li>Open template workbook → click anywhere in the table → <strong>Right-click → Refresh</strong></li>
+                            </ul>
+                        </li>
+                        <li>PQ automatically:
+                            <ul>
+                                <li>Includes new files</li>
+                                <li>Applies decimal fixes</li>
+                                <li>Adds <code>Check_N_lt_M</code> and <code>Sum_EF</code></li>
+                                <li>Maintains column order</li>
+                                <li>Recalculates grouped averages</li>
+                            </ul>
+                        </li>
+                    </ol>
                 `
             },
 
