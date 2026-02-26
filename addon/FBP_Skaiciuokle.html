@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="lt">
 <head>
   <meta charset="UTF-8" />
@@ -13,18 +13,18 @@
     html, body { height: 100%; }
     body {
       background: #0a1628;
-      font-family: Georgia, 'Times New Roman', serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
     input[type=range] { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.12); outline: none; }
-    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #2a7ad0; cursor: pointer; border: 2px solid #4a9fe8; }
-    input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #2a7ad0; cursor: pointer; border: 2px solid #4a9fe8; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #007AFF; cursor: pointer; border: 2px solid #5AC8FA; }
+    input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #007AFF; cursor: pointer; border: 2px solid #5AC8FA; }
     input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; }
     input[type=number] { -moz-appearance: textfield; }
     select { -webkit-appearance: none; appearance: none; cursor: pointer; }
-    * { scrollbar-width: thin; scrollbar-color: #1e5fa8 #0a1628; }
+    * { scrollbar-width: thin; scrollbar-color: #0062cc #0a1628; }
     *::-webkit-scrollbar { width: 6px; }
     *::-webkit-scrollbar-track { background: #0a1628; }
-    *::-webkit-scrollbar-thumb { background: #1e5fa8; border-radius: 3px; }
+    *::-webkit-scrollbar-thumb { background: #0062cc; border-radius: 3px; }
   </style>
 </head>
 <body>
@@ -34,10 +34,10 @@
     const { useState, useEffect } = React;
 
     const PRICING = {
-      small:  { reception: 0.20, storage30: 0.30, processing: 0.90, label: "Maža",         color: "#4A90D9" },
-      medium: { reception: 0.50, storage30: 0.90, processing: 2.00, label: "Vidutinė",     color: "#2C6BAC" },
-      large:  { reception: 0.60, storage30: 3.60, processing: 4.00, label: "Didelė",       color: "#1A4A80" },
-      xlarge: { reception: 1.00, storage30: 7.50, processing: 6.00, label: "Labai didelė", color: "#0D2B4E" },
+      small:  { reception: 0.20, storage30: 0.30, processing: 0.90, label: "Maža",         color: "#5AC8FA" },
+      medium: { reception: 0.50, storage30: 0.90, processing: 2.00, label: "Vidutinė",     color: "#007AFF" },
+      large:  { reception: 0.60, storage30: 3.60, processing: 4.00, label: "Didelė",       color: "#5856D6" },
+      xlarge: { reception: 1.00, storage30: 7.50, processing: 6.00, label: "Labai didelė", color: "#2E2A7A" },
     };
 
     const SIZE_LIMITS = {
@@ -113,7 +113,7 @@
         <div style={{
           minHeight: "100vh",
           background: "linear-gradient(135deg, #0a1628 0%, #0d2240 50%, #0a1628 100%)",
-          fontFamily: "'Georgia', 'Times New Roman', serif",
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
           display: "flex", alignItems: "flex-start", justifyContent: "center",
           padding: "40px 16px",
         }}>
@@ -123,16 +123,17 @@
             <div style={{ textAlign: "center", marginBottom: 40 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 8 }}>
                 <div style={{
-                  background: "linear-gradient(135deg, #1e5fa8, #2d7dd2)", color: "#fff",
-                  fontFamily: "'Arial Black', sans-serif", fontWeight: 900, fontSize: 18,
-                  padding: "4px 12px", letterSpacing: 1,
+                  background: "linear-gradient(135deg, #0062cc, #5856D6)", color: "#fff",
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+                  fontWeight: 800, fontSize: 17,
+                  padding: "5px 12px", letterSpacing: 0.6,
                 }}>PHH GROUP</div>
-                <span style={{ color: "#5a8fc2", fontSize: 12, letterSpacing: 4, textTransform: "uppercase", fontFamily: "sans-serif" }}>Marketplace</span>
+                <span style={{ color: "#8EA6D8", fontSize: 12, letterSpacing: 3, textTransform: "uppercase", fontFamily: "sans-serif", fontWeight: 500 }}>Marketplace</span>
               </div>
-              <h1 style={{ color: "#fff", fontSize: "clamp(24px, 5vw, 38px)", fontWeight: 400, letterSpacing: 1, margin: "0 0 8px" }}>
+              <h1 style={{ color: "#fff", fontSize: "clamp(24px, 5vw, 38px)", fontWeight: 650, letterSpacing: -0.3, lineHeight: 1.08, margin: "0 0 8px" }}>
                 FBP Kainų Skaičiuoklė
               </h1>
-              <p style={{ color: "#7aacdd", fontSize: 15, margin: 0, fontFamily: "sans-serif", fontStyle: "italic" }}>
+              <p style={{ color: "#B9C6FF", fontSize: 14, margin: 0, fontFamily: "sans-serif", fontStyle: "normal", fontWeight: 500, letterSpacing: 0.1 }}>
                 Fulfillment by Pigu — apskaičiuokite savo prekių sandėliavimo išlaidas
               </p>
             </div>
@@ -145,8 +146,8 @@
               {[["manual", "Pasirinkti kategoriją"], ["auto", "Nustatyti pagal matmenis"]].map(([m, label]) => (
                 <button key={m} onClick={() => setMode(m)} style={{
                   flex: 1, padding: "10px 16px",
-                  background: mode === m ? "linear-gradient(135deg, #1e5fa8, #2a7ad0)" : "transparent",
-                  color: mode === m ? "#fff" : "#7aacdd",
+                  background: mode === m ? "linear-gradient(135deg, #0062cc, #007AFF)" : "transparent",
+                  color: mode === m ? "#fff" : "#B9C6FF",
                   border: "none", borderRadius: 9, cursor: "pointer",
                   fontFamily: "sans-serif", fontSize: 14, fontWeight: mode === m ? 600 : 400,
                   transition: "all 0.2s",
@@ -159,13 +160,13 @@
               background: "rgba(42, 122, 208, 0.08)", border: "1px solid rgba(42, 122, 208, 0.25)",
               borderRadius: 14, padding: "16px 20px", marginBottom: 16,
             }}>
-              <div style={{ color: "#7aacdd", fontFamily: "sans-serif", fontSize: 11, letterSpacing: 3, textTransform: "uppercase", marginBottom: 14 }}>
+              <div style={{ color: "#B9C6FF", fontFamily: "sans-serif", fontSize: 11, letterSpacing: 3, textTransform: "uppercase", marginBottom: 14 }}>
                 🏷️ Nuolaidos
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
                 {[["reception","📦 Priėmimas"],["storage","🏭 Sandėliavimas"],["processing","⚙️ Apdorojimas"]].map(([key, label]) => (
                   <div key={key}>
-                    <label style={{ color: "#a0c4e8", fontFamily: "sans-serif", fontSize: 12, display: "block", marginBottom: 6 }}>{label}</label>
+                    <label style={{ color: "#DFE5FF", fontFamily: "sans-serif", fontSize: 12, display: "block", marginBottom: 6 }}>{label}</label>
                     <div style={{ position: "relative" }}>
                       <input type="number" min="0" max="100"
                         value={discounts[key] === 0 ? "" : discounts[key]}
@@ -174,16 +175,16 @@
                         style={{
                           ...inputStyle,
                           padding: "9px 32px 9px 12px",
-                          border: discounts[key] > 0 ? "1px solid #2a7ad0" : "1px solid rgba(255,255,255,0.12)",
-                          color: discounts[key] > 0 ? "#4a9fe8" : "#fff",
+                          border: discounts[key] > 0 ? "1px solid #007AFF" : "1px solid rgba(255,255,255,0.12)",
+                          color: discounts[key] > 0 ? "#5AC8FA" : "#fff",
                           fontWeight: discounts[key] > 0 ? 700 : 400,
                           background: "rgba(255,255,255,0.07)",
                         }}
                       />
-                      <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#5a8fc2", fontFamily: "sans-serif", fontSize: 13, pointerEvents: "none" }}>%</span>
+                      <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#8EA6D8", fontFamily: "sans-serif", fontSize: 13, pointerEvents: "none" }}>%</span>
                     </div>
                     {discounts[key] > 0 && (
-                      <div style={{ color: "#4a9fe8", fontFamily: "sans-serif", fontSize: 11, marginTop: 4 }}>−{discounts[key]}% nuolaida taikoma</div>
+                      <div style={{ color: "#5AC8FA", fontFamily: "sans-serif", fontSize: 11, marginTop: 4 }}>−{discounts[key]}% nuolaida taikoma</div>
                     )}
                   </div>
                 ))}
@@ -195,7 +196,7 @@
 
               {/* Left — Inputs */}
               <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: 24 }}>
-                <h3 style={{ color: "#7aacdd", fontSize: 11, letterSpacing: 3, textTransform: "uppercase", fontFamily: "sans-serif", margin: "0 0 20px" }}>
+                <h3 style={{ color: "#B9C6FF", fontSize: 11, letterSpacing: 3, textTransform: "uppercase", fontFamily: "sans-serif", margin: "0 0 20px" }}>
                   {mode === "manual" ? "Prekės kategorija" : "Prekės matmenys"}
                 </h3>
 
@@ -210,7 +211,7 @@
                           borderRadius: 10, padding: "12px 16px", cursor: "pointer", textAlign: "left", transition: "all 0.2s",
                         }}>
                           <div style={{ color: "#fff", fontFamily: "sans-serif", fontWeight: 600, fontSize: 15, marginBottom: 4 }}>{p.label}</div>
-                          <div style={{ color: "#a0c4e8", fontFamily: "sans-serif", fontSize: 11 }}>≤{lim.maxWeight}kg · ≤{lim.maxSide}cm · suma ≤{lim.maxSum}cm</div>
+                          <div style={{ color: "#DFE5FF", fontFamily: "sans-serif", fontSize: 11 }}>≤{lim.maxWeight}kg · ≤{lim.maxSide}cm · suma ≤{lim.maxSum}cm</div>
                         </button>
                       );
                     })}
@@ -219,14 +220,14 @@
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {[["weight","Svoris (kg)",weight,setWeight],["height","Aukštis (cm)",height,setHeight],["length","Ilgis (cm)",length,setLength],["width","Plotis (cm)",width,setWidth]].map(([id, label, val, setter]) => (
                       <div key={id}>
-                        <label style={{ color: "#7aacdd", fontFamily: "sans-serif", fontSize: 12, display: "block", marginBottom: 6 }}>{label}</label>
+                        <label style={{ color: "#B9C6FF", fontFamily: "sans-serif", fontSize: 12, display: "block", marginBottom: 6 }}>{label}</label>
                         <input type="number" min="0" value={val} onChange={e => setter(e.target.value)} placeholder="0" style={inputStyle} />
                       </div>
                     ))}
                     {autoError && <p style={{ color: "#ff7a7a", fontFamily: "sans-serif", fontSize: 12, margin: 0 }}>{autoError}</p>}
                     {autoCategory && (
                       <div style={{ background: `linear-gradient(135deg, ${PRICING[autoCategory].color}55, ${PRICING[autoCategory].color}88)`, border: `1px solid ${PRICING[autoCategory].color}`, borderRadius: 10, padding: "10px 14px" }}>
-                        <div style={{ color: "#a0c4e8", fontFamily: "sans-serif", fontSize: 11, marginBottom: 2 }}>Nustatyta kategorija:</div>
+                        <div style={{ color: "#DFE5FF", fontFamily: "sans-serif", fontSize: 11, marginBottom: 2 }}>Nustatyta kategorija:</div>
                         <div style={{ color: "#fff", fontFamily: "sans-serif", fontWeight: 700, fontSize: 16 }}>{PRICING[autoCategory].label}</div>
                       </div>
                     )}
@@ -237,7 +238,7 @@
                 <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 12 }}>
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                      <label style={{ color: "#7aacdd", fontFamily: "sans-serif", fontSize: 12 }}>Sandėliavimo dienų skaičius</label>
+                      <label style={{ color: "#B9C6FF", fontFamily: "sans-serif", fontSize: 12 }}>Sandėliavimo dienų skaičius</label>
                       <span style={{ color: "#fff", fontFamily: "sans-serif", fontWeight: 700, fontSize: 18 }}>{days}</span>
                     </div>
                     <input type="range" min="1" max="365" value={days} onChange={e => setDays(Number(e.target.value))} style={{ width: "100%", cursor: "pointer" }} />
@@ -246,7 +247,7 @@
                     </div>
                   </div>
                   <div>
-                    <label style={{ color: "#7aacdd", fontFamily: "sans-serif", fontSize: 12, display: "block", marginBottom: 6 }}>Prekių kiekis</label>
+                    <label style={{ color: "#B9C6FF", fontFamily: "sans-serif", fontSize: 12, display: "block", marginBottom: 6 }}>Prekių kiekis</label>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <button onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ width: 36, height: 36, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, color: "#fff", fontSize: 20, cursor: "pointer", fontFamily: "sans-serif" }}>−</button>
                       <input type="number" min="1" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
@@ -260,7 +261,7 @@
               {/* Right — Results */}
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: 24, flex: 1 }}>
-                  <h3 style={{ color: "#7aacdd", fontSize: 11, letterSpacing: 3, textTransform: "uppercase", fontFamily: "sans-serif", margin: "0 0 20px" }}>
+                  <h3 style={{ color: "#B9C6FF", fontSize: 11, letterSpacing: 3, textTransform: "uppercase", fontFamily: "sans-serif", margin: "0 0 20px" }}>
                     Vienos prekės kaina
                   </h3>
                   {!activeCategory ? (
@@ -276,32 +277,32 @@
                       ].map(([label, val, icon, original, disc]) => (
                         <div key={label} style={{ marginBottom: 14 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5, alignItems: "center" }}>
-                            <span style={{ color: "#a0c4e8", fontFamily: "sans-serif", fontSize: 13 }}>{icon} {label}</span>
+                            <span style={{ color: "#DFE5FF", fontFamily: "sans-serif", fontSize: 13 }}>{icon} {label}</span>
                             <div style={{ textAlign: "right" }}>
                               {disc > 0 && (
                                 <span style={{ color: "#4a6a88", fontFamily: "sans-serif", fontSize: 11, textDecoration: "line-through", marginRight: 6 }}>{formatEur(original)}</span>
                               )}
-                              <span style={{ color: disc > 0 ? "#4ac87a" : "#fff", fontFamily: "sans-serif", fontWeight: 600, fontSize: 14 }}>
+                              <span style={{ color: disc > 0 ? "#34C759" : "#fff", fontFamily: "sans-serif", fontWeight: 600, fontSize: 14 }}>
                                 {formatEur(val)}{disc > 0 ? ` (−${disc}%)` : ""}
                               </span>
                             </div>
                           </div>
                           <div style={{ height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden" }}>
-                            <div style={{ height: "100%", width: `${pct(val)}%`, background: disc > 0 ? "linear-gradient(90deg, #1a7a4a, #4ac87a)" : "linear-gradient(90deg, #1e5fa8, #4a9fe8)", borderRadius: 2, transition: "width 0.4s ease" }} />
+                            <div style={{ height: "100%", width: `${pct(val)}%`, background: disc > 0 ? "linear-gradient(90deg, #248A3D, #34C759)" : "linear-gradient(90deg, #0062cc, #5AC8FA)", borderRadius: 2, transition: "width 0.4s ease" }} />
                           </div>
                         </div>
                       ))}
                       <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", marginTop: 8, paddingTop: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ color: "#7aacdd", fontFamily: "sans-serif", fontSize: 13 }}>Viso / prekei</span>
-                        <span style={{ color: "#4a9fe8", fontFamily: "sans-serif", fontWeight: 700, fontSize: 24 }}>{formatEur(totalPerItem)}</span>
+                        <span style={{ color: "#B9C6FF", fontFamily: "sans-serif", fontSize: 13 }}>Viso / prekei</span>
+                        <span style={{ color: "#5AC8FA", fontFamily: "sans-serif", fontWeight: 700, fontSize: 24 }}>{formatEur(totalPerItem)}</span>
                       </div>
                     </>
                   )}
                 </div>
 
                 {activeCategory && (
-                  <div style={{ background: "linear-gradient(135deg, #1a3f70, #1e5fa8)", border: "1px solid #2a7ad0", borderRadius: 16, padding: 24 }}>
-                    <div style={{ color: "#7aacdd", fontFamily: "sans-serif", fontSize: 11, letterSpacing: 3, textTransform: "uppercase", marginBottom: 10 }}>
+                  <div style={{ background: "linear-gradient(135deg, #1a3f70, #0062cc)", border: "1px solid #007AFF", borderRadius: 16, padding: 24 }}>
+                    <div style={{ color: "#B9C6FF", fontFamily: "sans-serif", fontSize: 11, letterSpacing: 3, textTransform: "uppercase", marginBottom: 10 }}>
                       Bendra suma ({quantity} vnt.)
                     </div>
                     <div style={{ color: "#fff", fontFamily: "sans-serif", fontWeight: 700, fontSize: "clamp(28px, 5vw, 42px)", letterSpacing: -1 }}>
@@ -313,13 +314,13 @@
                       return (
                         <div style={{ display: "flex", gap: 12, marginTop: 6, alignItems: "center" }}>
                           <span style={{ color: "#4a708a", fontFamily: "sans-serif", fontSize: 13, textDecoration: "line-through" }}>{formatEur(origTotal)}</span>
-                          <span style={{ background: "rgba(74,200,122,0.2)", color: "#4ac87a", fontFamily: "sans-serif", fontSize: 12, fontWeight: 700, padding: "2px 8px", borderRadius: 20 }}>
+                          <span style={{ background: "rgba(74,200,122,0.2)", color: "#34C759", fontFamily: "sans-serif", fontSize: 12, fontWeight: 700, padding: "2px 8px", borderRadius: 20 }}>
                             Sutaupoma {formatEur(saved)}
                           </span>
                         </div>
                       );
                     })()}
-                    <div style={{ color: "#a0c4e8", fontFamily: "sans-serif", fontSize: 13, marginTop: 8 }}>
+                    <div style={{ color: "#DFE5FF", fontFamily: "sans-serif", fontSize: 13, marginTop: 8 }}>
                       Formulė: {formatEur(reception)} + ({formatEur(PRICING[activeCategory].storage30)}/30 × {days}) + {formatEur(processing)}
                     </div>
                   </div>
@@ -327,7 +328,7 @@
 
                 {activeCategory && (
                   <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: 16 }}>
-                    <div style={{ color: "#5a8fc2", fontFamily: "sans-serif", fontSize: 10, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>
+                    <div style={{ color: "#8EA6D8", fontFamily: "sans-serif", fontSize: 10, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>
                       Kategorijos įkainiai — {PRICING[activeCategory].label}
                     </div>
                     {[
@@ -337,8 +338,8 @@
                       ["Apdorojimas", formatEur(PRICING[activeCategory].processing)],
                     ].map(([k, v]) => (
                       <div key={k} style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                        <span style={{ color: "#5a8fc2", fontFamily: "sans-serif", fontSize: 12 }}>{k}</span>
-                        <span style={{ color: "#a0c4e8", fontFamily: "sans-serif", fontSize: 12, fontWeight: 600 }}>{v}</span>
+                        <span style={{ color: "#8EA6D8", fontFamily: "sans-serif", fontSize: 12 }}>{k}</span>
+                        <span style={{ color: "#DFE5FF", fontFamily: "sans-serif", fontSize: 12, fontWeight: 600 }}>{v}</span>
                       </div>
                     ))}
                   </div>
