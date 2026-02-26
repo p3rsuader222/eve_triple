@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -63,44 +63,294 @@
             transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Layered background for smooth transitions */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('images/background.png');
-            background-size: auto;
-            background-position: top left;
-            background-repeat: repeat;
-            background-attachment: fixed;
-            z-index: -1;
-            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 1;
-            filter: none;
-        }
-
-        body.no-bg::before {
+        /* Side-mounted background scene (monkeys / GIFs / hidden) */
+        body[data-bg-mode="hidden"] .bg-scene {
             opacity: 0;
         }
 
-        body.no-bg {
-            background-color: var(--bg-solid);
+        .bg-scene {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 1;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            filter: none;
+            --app-half-width: min(475px, calc(50vw - 20px));
+            --bg-side-gap: clamp(2px, 0.5vw, 8px);
+        }
+
+        .bg-scene::before,
+        .bg-scene::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: clamp(52px, 6vw, 96px);
+            pointer-events: none;
+            z-index: 2;
+            opacity: 1;
+        }
+
+        .bg-scene::before {
+            left: calc(50% - var(--app-half-width) - var(--bg-side-gap) - 10px);
+            background: linear-gradient(to right,
+                    rgba(245, 245, 247, 0.00) 0%,
+                    rgba(245, 245, 247, 0.05) 18%,
+                    rgba(245, 245, 247, 0.16) 42%,
+                    rgba(245, 245, 247, 0.34) 72%,
+                    rgba(245, 245, 247, 0.50) 100%);
+        }
+
+        .bg-scene::after {
+            left: calc(50% + var(--app-half-width) + var(--bg-side-gap) - 16px);
+            background: linear-gradient(to right,
+                    rgba(245, 245, 247, 0.40) 0%,
+                    rgba(245, 245, 247, 0.26) 26%,
+                    rgba(245, 245, 247, 0.12) 58%,
+                    rgba(245, 245, 247, 0.03) 82%,
+                    rgba(245, 245, 247, 0.00) 100%);
+            opacity: 0.72;
+        }
+
+        .bg-scene__side {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: auto;
+            overflow: hidden;
+            isolation: isolate;
+            opacity: 1;
+        }
+
+        .bg-scene__side--left {
+            left: 0;
+            right: calc(50% + var(--app-half-width) + var(--bg-side-gap));
+        }
+
+        .bg-scene__side--right {
+            left: calc(50% + var(--app-half-width) + var(--bg-side-gap));
+            right: 0;
+        }
+
+        .bg-scene__side::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .bg-scene__side--left::after {
+            background:
+                linear-gradient(to right,
+                    rgba(245, 245, 247, 0.02) 0%,
+                    rgba(245, 245, 247, 0.02) 84%,
+                    rgba(245, 245, 247, 0.56) 100%),
+                linear-gradient(to bottom,
+                    rgba(245, 245, 247, 0.1) 0%,
+                    transparent 18%,
+                    transparent 82%,
+                    rgba(245, 245, 247, 0.14) 100%);
+        }
+
+        .bg-scene__side--right::after {
+            background:
+                linear-gradient(to left,
+                    rgba(245, 245, 247, 0.02) 0%,
+                    rgba(245, 245, 247, 0.02) 84%,
+                    rgba(245, 245, 247, 0.56) 100%),
+                linear-gradient(to bottom,
+                    rgba(245, 245, 247, 0.1) 0%,
+                    transparent 18%,
+                    transparent 82%,
+                    rgba(245, 245, 247, 0.14) 100%);
+        }
+
+        .bg-scene__vignette {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at center, rgba(0, 0, 0, 0) 34%, rgba(0, 0, 0, 0.1) 65%, rgba(0, 0, 0, 0.22) 100%),
+                linear-gradient(to bottom, rgba(245, 245, 247, 0.12), rgba(245, 245, 247, 0));
+            opacity: 1;
+        }
+
+        .bg-scene__layer {
+            position: absolute;
+            inset: 0;
+            transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+                filter 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bg-scene__monkey {
+            opacity: 0;
+            background-image: url('images/background.png');
+            background-repeat: no-repeat;
+            background-size: cover;
+            filter: brightness(0.92) saturate(0.95);
+        }
+
+        .bg-scene__side--left .bg-scene__monkey {
+            background-position: 18% center;
+        }
+
+        .bg-scene__side--right .bg-scene__monkey {
+            background-position: 82% center;
+            transform: scaleX(-1);
+        }
+
+        .bg-scene__gif {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            filter: brightness(0.78) saturate(0.92);
+            mix-blend-mode: screen;
+        }
+
+        .bg-scene__side--left .bg-scene__gif {
+            object-position: 72% center;
+        }
+
+        .bg-scene__gif-fade {
+            opacity: 0;
+            background: linear-gradient(to top,
+                    rgba(245, 245, 247, 0.98) 0%,
+                    rgba(245, 245, 247, 0.72) 38%,
+                    rgba(245, 245, 247, 0.18) 70%,
+                    transparent 100%);
+        }
+
+        .bg-scene__gif-tint {
+            opacity: 0;
+            background: linear-gradient(180deg, rgba(0, 122, 255, 0.55) 0%, rgba(88, 86, 214, 0.5) 100%);
+            mix-blend-mode: overlay;
+        }
+
+        body[data-bg-mode="monkeys"] .bg-scene__monkey {
+            opacity: 0.66;
+        }
+
+        body[data-bg-mode="gifs"] .bg-scene__gif {
+            opacity: 0.58;
+        }
+
+        body[data-bg-mode="gifs"] .bg-scene__gif-fade {
+            opacity: 1;
+        }
+
+        body[data-bg-mode="gifs"] .bg-scene__gif-tint {
+            opacity: 0.45;
         }
 
         body.dark-bg {
             --bg-solid: #181a1f;
         }
 
-        body.dark-bg::before {
-            filter: brightness(0.42) saturate(0.85);
+        body.dark-bg .bg-scene {
+            filter: saturate(0.9);
+        }
+
+        body.dark-bg .bg-scene::before {
+            background: linear-gradient(to right,
+                    rgba(17, 20, 26, 0.00) 0%,
+                    rgba(17, 20, 26, 0.06) 18%,
+                    rgba(17, 20, 26, 0.22) 42%,
+                    rgba(17, 20, 26, 0.40) 72%,
+                    rgba(17, 20, 26, 0.56) 100%);
+            opacity: 0.9;
+        }
+
+        body.dark-bg .bg-scene::after {
+            background: linear-gradient(to right,
+                    rgba(17, 20, 26, 0.48) 0%,
+                    rgba(17, 20, 26, 0.30) 26%,
+                    rgba(17, 20, 26, 0.14) 58%,
+                    rgba(17, 20, 26, 0.04) 82%,
+                    rgba(17, 20, 26, 0.00) 100%);
+            opacity: 0.74;
+        }
+
+        body.dark-bg .bg-scene__vignette {
+            background:
+                radial-gradient(circle at center, rgba(0, 0, 0, 0.05) 28%, rgba(0, 0, 0, 0.32) 74%, rgba(0, 0, 0, 0.55) 100%),
+                linear-gradient(to bottom, rgba(17, 20, 26, 0.2), rgba(17, 20, 26, 0));
+        }
+
+        body.dark-bg .bg-scene__side--left::after {
+            background:
+                linear-gradient(to right,
+                    rgba(17, 20, 26, 0.03) 0%,
+                    rgba(17, 20, 26, 0.03) 84%,
+                    rgba(17, 20, 26, 0.68) 100%),
+                linear-gradient(to bottom,
+                    rgba(17, 20, 26, 0.12) 0%,
+                    transparent 18%,
+                    transparent 82%,
+                    rgba(17, 20, 26, 0.18) 100%);
+        }
+
+        body.dark-bg .bg-scene__side--right::after {
+            background:
+                linear-gradient(to left,
+                    rgba(17, 20, 26, 0.03) 0%,
+                    rgba(17, 20, 26, 0.03) 84%,
+                    rgba(17, 20, 26, 0.68) 100%),
+                linear-gradient(to bottom,
+                    rgba(17, 20, 26, 0.12) 0%,
+                    transparent 18%,
+                    transparent 82%,
+                    rgba(17, 20, 26, 0.18) 100%);
+        }
+
+        body.dark-bg .bg-scene__monkey {
+            filter: brightness(0.55) saturate(0.8);
+        }
+
+        body.dark-bg[data-bg-mode="monkeys"] .bg-scene__monkey {
+            opacity: 0.46;
+        }
+
+        body.dark-bg[data-bg-mode="gifs"] .bg-scene__gif {
+            opacity: 0.5;
+            filter: brightness(0.7) saturate(0.86);
+        }
+
+        body.dark-bg .bg-scene__gif-fade {
+            background: linear-gradient(to top,
+                    rgba(17, 20, 26, 0.98) 0%,
+                    rgba(17, 20, 26, 0.75) 40%,
+                    rgba(17, 20, 26, 0.16) 72%,
+                    transparent 100%);
+        }
+
+        body.dark-bg .bg-scene__gif-tint {
+            background: linear-gradient(180deg, rgba(30, 90, 180, 0.5) 0%, rgba(88, 86, 214, 0.44) 100%);
+        }
+
+        @media (max-width: 1260px) {
+            .bg-scene {
+                --bg-side-gap: 2px;
+            }
+
+            .bg-scene__side {
+                opacity: 0.94;
+            }
+        }
+
+        @media (max-width: 1080px) {
+            .bg-scene::before,
+            .bg-scene::after,
+            .bg-scene__side {
+                display: none;
+            }
         }
 
         .container {
             width: 100%;
             max-width: 950px;
+            position: relative;
+            z-index: 1;
             background: var(--bg-glass);
             backdrop-filter: blur(40px);
             /* Deep premium blur */
@@ -1487,12 +1737,30 @@
     </style>
 </head>
 
-<body>
+<body data-bg-mode="gifs">
+    <div class="bg-scene" aria-hidden="true">
+        <div class="bg-scene__vignette"></div>
+
+        <div class="bg-scene__side bg-scene__side--left">
+            <div class="bg-scene__layer bg-scene__monkey"></div>
+            <img class="bg-scene__layer bg-scene__gif" src="images/mrgurnsss-friday.gif" alt="">
+            <div class="bg-scene__layer bg-scene__gif-fade"></div>
+            <div class="bg-scene__layer bg-scene__gif-tint"></div>
+        </div>
+
+        <div class="bg-scene__side bg-scene__side--right">
+            <div class="bg-scene__layer bg-scene__monkey"></div>
+            <img class="bg-scene__layer bg-scene__gif" src="images/monkey-chill-monkey.gif" alt="">
+            <div class="bg-scene__layer bg-scene__gif-fade"></div>
+            <div class="bg-scene__layer bg-scene__gif-tint"></div>
+        </div>
+    </div>
+
     <div class="container" style="position: relative;">
         <div class="bg-toggle-container">
-            <button class="bg-toggle-btn" id="bgToggle" title="Toggle Background">
-                <img src="images/no_monkey_icon.png" alt="Toggle" class="icon large-scale">
-                <span class="text">Hide monkeys!</span>
+            <button class="bg-toggle-btn" id="bgToggle" title="Cycle background mode">
+                <img src="images/favicon_munke.png" alt="Toggle" class="icon">
+                <span class="text">MUNKE.</span>
             </button>
             <button class="bg-toggle-btn" id="darkBgToggle" title="Toggle dark background mode">
                 <span class="emoji-icon" aria-hidden="true">🌙</span>
@@ -2344,26 +2612,47 @@ function reply(obj) {
             });
         }
 
-        // Background Toggle Logic
-        function toggleBackground() {
-            const isHidden = document.body.classList.toggle('no-bg');
-            localStorage.setItem('eve_bg_hidden', isHidden);
-            updateToggleUI(isHidden);
+        // Background Toggle Logic (2 modes: gifs <-> hidden)
+        const BACKGROUND_MODES = ['gifs', 'hidden'];
+
+        function normalizeBackgroundMode(mode) {
+            if (mode === 'monkeys') return 'gifs';
+            return BACKGROUND_MODES.includes(mode) ? mode : 'gifs';
         }
 
-        function updateToggleUI(isHidden) {
+        function applyBackgroundMode(mode, { persist = true } = {}) {
+            const normalizedMode = normalizeBackgroundMode(mode);
+            document.body.dataset.bgMode = normalizedMode;
+            if (persist) {
+                localStorage.setItem('eve_bg_mode', normalizedMode);
+            }
+            updateToggleUI(normalizedMode);
+            return normalizedMode;
+        }
+
+        function toggleBackground() {
+            const currentMode = normalizeBackgroundMode(document.body.dataset.bgMode);
+            const currentIndex = BACKGROUND_MODES.indexOf(currentMode);
+            const nextMode = BACKGROUND_MODES[(currentIndex + 1) % BACKGROUND_MODES.length];
+            applyBackgroundMode(nextMode);
+        }
+
+        function updateToggleUI(mode) {
             const btn = document.getElementById('bgToggle');
             const icon = btn.querySelector('.icon');
             const text = btn.querySelector('.text');
+            if (!btn || !icon || !text) return;
 
-            if (isHidden) {
+            if (mode === 'gifs') {
                 icon.src = 'images/favicon_munke.png';
                 icon.classList.remove('large-scale');
-                text.textContent = 'Show monkeys!';
+                text.textContent = 'MUNKE.';
+                btn.title = 'Background: cinematic side GIFs (click to hide)';
             } else {
                 icon.src = 'images/no_monkey_icon.png';
                 icon.classList.add('large-scale');
-                text.textContent = 'Hide monkeys!';
+                text.textContent = 'HIDE.';
+                btn.title = 'Background hidden (click to show GIF background)';
             }
         }
 
@@ -2392,12 +2681,17 @@ function reply(obj) {
         document.addEventListener('DOMContentLoaded', () => {
             renderKnowledgeBase();
 
-            // Init Background
-            const bgHidden = localStorage.getItem('eve_bg_hidden') === 'true';
-            if (bgHidden) {
-                document.body.classList.add('no-bg');
+            // Init Background (supports legacy boolean key)
+            let savedBgMode = localStorage.getItem('eve_bg_mode');
+            if (!savedBgMode) {
+                const legacyHidden = localStorage.getItem('eve_bg_hidden');
+                if (legacyHidden === 'true') {
+                    savedBgMode = 'hidden';
+                } else if (legacyHidden === 'false') {
+                    savedBgMode = 'gifs';
+                }
             }
-            updateToggleUI(bgHidden);
+            applyBackgroundMode(savedBgMode || 'gifs', { persist: false });
 
             document.getElementById('bgToggle').addEventListener('click', toggleBackground);
 
