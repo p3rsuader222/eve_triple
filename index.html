@@ -2763,7 +2763,11 @@ function reply(obj) {
                     doc.documentElement.offsetHeight || 0
                 );
                 if (height > 0) {
-                    frame.style.height = (height + 6) + 'px';
+                    const targetHeight = Math.ceil(height);
+                    const currentHeight = parseInt(frame.style.height || '0', 10) || 0;
+                    if (Math.abs(currentHeight - targetHeight) > 1) {
+                        frame.style.height = targetHeight + 'px';
+                    }
                 }
             } catch (error) {
                 // Ignore cross-document / loading timing issues.
@@ -2783,7 +2787,11 @@ function reply(obj) {
                     doc.documentElement.offsetHeight || 0
                 );
                 if (height > 0) {
-                    frame.style.height = (height + 6) + 'px';
+                    const targetHeight = Math.ceil(height);
+                    const currentHeight = parseInt(frame.style.height || '0', 10) || 0;
+                    if (Math.abs(currentHeight - targetHeight) > 1) {
+                        frame.style.height = targetHeight + 'px';
+                    }
                 }
             } catch (error) {
                 // Ignore cross-document / loading timing issues.
