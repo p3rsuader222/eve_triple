@@ -1,0 +1,361 @@
+﻿<!DOCTYPE html>
+<html lang="lt">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FBP Kainų Skaičiuoklė — PHH Group</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      background: #0a1628;
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+    input[type=range] { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.12); outline: none; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #2a7ad0; cursor: pointer; border: 2px solid #4a9fe8; }
+    input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #2a7ad0; cursor: pointer; border: 2px solid #4a9fe8; }
+    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    input[type=number] { -moz-appearance: textfield; }
+    select { -webkit-appearance: none; appearance: none; cursor: pointer; }
+    * { scrollbar-width: thin; scrollbar-color: #1e5fa8 #0a1628; }
+    *::-webkit-scrollbar { width: 6px; }
+    *::-webkit-scrollbar-track { background: #0a1628; }
+    *::-webkit-scrollbar-thumb { background: #1e5fa8; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const PRICING = {
+      small:  { reception: 0.20, storage30: 0.30, processing: 0.90, label: "Maža",         color: "#4A90D9" },
+      medium: { reception: 0.50, storage30: 0.90, processing: 2.00, label: "Vidutinė",     color: "#2C6BAC" },
+      large:  { reception: 0.60, storage30: 3.60, processing: 4.00, label: "Didelė",       color: "#1A4A80" },
+      xlarge: { reception: 1.00, storage30: 7.50, processing: 6.00, label: "Labai didelė", color: "#0D2B4E" },
+    };
+
+    const SIZE_LIMITS = {
+      small:  { maxWeight: 20, maxSide: 50,  maxSum: 100 },
+      medium: { maxWeight: 20, maxSide: 120, maxSum: 150 },
+      large:  { maxWeight: 40, maxSide: 200, maxSum: 360 },
+      xlarge: { maxWeight: 80, maxSide: 220, maxSum: 360 },
+    };
+
+    function detectCategory(weight, h, l, w) {
+      const longestSide = Math.max(h, l, w);
+      const sum = h + l + w;
+      for (const [key, limits] of Object.entries(SIZE_LIMITS)) {
+        if (weight <= limits.maxWeight && longestSide <= limits.maxSide && sum <= limits.maxSum) {
+          return key;
+        }
+      }
+      return null;
+    }
+
+    function formatEur(val) {
+      return val.toFixed(2).replace(".", ",") + " €";
+    }
+
+    function FBPCalculator() {
+      const [mode, setMode] = useState("manual");
+      const [category, setCategory] = useState("small");
+      const [days, setDays] = useState(10);
+      const [quantity, setQuantity] = useState(1);
+      const [weight, setWeight] = useState("");
+      const [height, setHeight] = useState("");
+      const [length, setLength] = useState("");
+      const [width, setWidth] = useState("");
+      const [autoCategory, setAutoCategory] = useState(null);
+      const [autoError, setAutoError] = useState("");
+      const [discounts, setDiscounts] = useState({ reception: 0, storage: 0, processing: 0 });
+
+      const setDiscount = (key, val) => {
+        const clamped = Math.min(100, Math.max(0, parseFloat(val) || 0));
+        setDiscounts(d => ({ ...d, [key]: clamped }));
+      };
+
+      useEffect(() => {
+        if (mode === "auto") {
+          const w = parseFloat(weight), h = parseFloat(height), l = parseFloat(length), wi = parseFloat(width);
+          if ([w, h, l, wi].some(isNaN) || [w, h, l, wi].some(v => v <= 0)) {
+            setAutoCategory(null); setAutoError(""); return;
+          }
+          const cat = detectCategory(w, h, l, wi);
+          if (cat) { setAutoCategory(cat); setAutoError(""); }
+          else { setAutoCategory(null); setAutoError("Prekė viršija maksimalius FBP matmenis arba svorį."); }
+        }
+      }, [mode, weight, height, length, width]);
+
+      const activeCategory = mode === "auto" ? autoCategory : category;
+      const pricing = activeCategory ? PRICING[activeCategory] : null;
+
+      const reception   = pricing ? pricing.reception * (1 - discounts.reception / 100) : 0;
+      const storageCost = pricing ? (pricing.storage30 / 30) * days * (1 - discounts.storage / 100) : 0;
+      const processing  = pricing ? pricing.processing * (1 - discounts.processing / 100) : 0;
+      const totalPerItem = reception + storageCost + processing;
+      const totalAll     = totalPerItem * quantity;
+      const pct = (val) => totalPerItem > 0 ? (val / totalPerItem) * 100 : 0;
+
+      const inputStyle = {
+        width: "100%", background: "rgba(255,255,255,0.06)",
+        border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8,
+        padding: "10px 12px", color: "#fff", fontFamily: "sans-serif",
+        fontSize: 15, outline: "none",
+      };
+
+      return (
+        <div style={{
+          minHeight: "100vh",
+          background: "linear-gradient(135deg, #0a1628 0%, #0d2240 50%, #0a1628 100%)",
+          fontFamily: "'Georgia', 'Times New Roman', serif",
+          display: "flex", alignItems: "flex-start", justifyContent: "center",
+          padding: "40px 16px",
+        }}>
+          <div style={{ width: "100%", maxWidth: 720 }}>
+
+            {/* ── Header ── */}
+            <div style={{ textAlign: "center", marginBottom: 40 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 8 }}>
+                <div style={{
+                  background: "linear-gradient(135deg, #1e5fa8, #2d7dd2)", color: "#fff",
+                  fontFamily: "'Arial Black', sans-serif", fontWeight: 900, fontSize: 18,
+                  padding: "4px 12px", letterSpacing: 1,
+                }}>PHH GROUP</div>
+                <span style={{ color: "#5a8fc2", fontSize: 12, letterSpacing: 4, textTransform: "uppercase", fontFamily: "sans-serif" }}>Marketplace</span>
+              </div>
+              <h1 style={{ color: "#fff", fontSize: "clamp(24px, 5vw, 38px)", fontWeight: 400, letterSpacing: 1, margin: "0 0 8px" }}>
+                FBP Kainų Skaičiuoklė
+              </h1>
+              <p style={{ color: "#7aacdd", fontSize: 15, margin: 0, fontFamily: "sans-serif", fontStyle: "italic" }}>
+                Fulfillment by Pigu — apskaičiuokite savo prekių sandėliavimo išlaidas
+              </p>
+            </div>
+
+            {/* ── Mode Toggle ── */}
+            <div style={{
+              background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: 12, padding: "4px", display: "flex", marginBottom: 24,
+            }}>
+              {[["manual", "Pasirinkti kategoriją"], ["auto", "Nustatyti pagal matmenis"]].map(([m, label]) => (
+                <button key={m} onClick={() => setMode(m)} style={{
+                  flex: 1, padding: "10px 16px",
+                  background: mode === m ? "linear-gradient(135deg, #1e5fa8, #2a7ad0)" : "transparent",
+                  color: mode === m ? "#fff" : "#7aacdd",
+                  border: "none", borderRadius: 9, cursor: "pointer",
+                  fontFamily: "sans-serif", fontSize: 14, fontWeight: mode === m ? 600 : 400,
+                  transition: "all 0.2s",
+                }}>{label}</button>
+              ))}
+            </div>
+
+            {/* ── Discount Strip ── */}
+            <div style={{
+              background: "rgba(42, 122, 208, 0.08)", border: "1px solid rgba(42, 122, 208, 0.25)",
+              borderRadius: 14, padding: "16px 20px", marginBottom: 16,
+            }}>
+              <div style={{ color: "#7aacdd", fontFamily: "sans-serif", fontSize: 11, letterSpacing: 3, textTransform: "uppercase", marginBottom: 14 }}>
+                🏷️ Nuolaidos
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                {[["reception","📦 Priėmimas"],["storage","🏭 Sandėliavimas"],["processing","⚙️ Apdorojimas"]].map(([key, label]) => (
+                  <div key={key}>
+                    <label style={{ color: "#a0c4e8", fontFamily: "sans-serif", fontSize: 12, display: "block", marginBottom: 6 }}>{label}</label>
+                    <div style={{ position: "relative" }}>
+                      <input type="number" min="0" max="100"
+                        value={discounts[key] === 0 ? "" : discounts[key]}
+                        onChange={e => setDiscount(key, e.target.value)}
+                        placeholder="0"
+                        style={{
+                          ...inputStyle,
+                          padding: "9px 32px 9px 12px",
+                          border: discounts[key] > 0 ? "1px solid #2a7ad0" : "1px solid rgba(255,255,255,0.12)",
+                          color: discounts[key] > 0 ? "#4a9fe8" : "#fff",
+                          fontWeight: discounts[key] > 0 ? 700 : 400,
+                          background: "rgba(255,255,255,0.07)",
+                        }}
+                      />
+                      <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#5a8fc2", fontFamily: "sans-serif", fontSize: 13, pointerEvents: "none" }}>%</span>
+                    </div>
+                    {discounts[key] > 0 && (
+                      <div style={{ color: "#4a9fe8", fontFamily: "sans-serif", fontSize: 11, marginTop: 4 }}>−{discounts[key]}% nuolaida taikoma</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Main Grid ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+
+              {/* Left — Inputs */}
+              <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: 24 }}>
+                <h3 style={{ color: "#7aacdd", fontSize: 11, letterSpacing: 3, textTransform: "uppercase", fontFamily: "sans-serif", margin: "0 0 20px" }}>
+                  {mode === "manual" ? "Prekės kategorija" : "Prekės matmenys"}
+                </h3>
+
+                {mode === "manual" ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {Object.entries(PRICING).map(([key, p]) => {
+                      const lim = SIZE_LIMITS[key];
+                      return (
+                        <button key={key} onClick={() => setCategory(key)} style={{
+                          background: category === key ? `linear-gradient(135deg, ${p.color}aa, ${p.color})` : "rgba(255,255,255,0.03)",
+                          border: category === key ? `1px solid ${p.color}` : "1px solid rgba(255,255,255,0.08)",
+                          borderRadius: 10, padding: "12px 16px", cursor: "pointer", textAlign: "left", transition: "all 0.2s",
+                        }}>
+                          <div style={{ color: "#fff", fontFamily: "sans-serif", fontWeight: 600, fontSize: 15, marginBottom: 4 }}>{p.label}</div>
+                          <div style={{ color: "#a0c4e8", fontFamily: "sans-serif", fontSize: 11 }}>≤{lim.maxWeight}kg · ≤{lim.maxSide}cm · suma ≤{lim.maxSum}cm</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {[["weight","Svoris (kg)",weight,setWeight],["height","Aukštis (cm)",height,setHeight],["length","Ilgis (cm)",length,setLength],["width","Plotis (cm)",width,setWidth]].map(([id, label, val, setter]) => (
+                      <div key={id}>
+                        <label style={{ color: "#7aacdd", fontFamily: "sans-serif", fontSize: 12, display: "block", marginBottom: 6 }}>{label}</label>
+                        <input type="number" min="0" value={val} onChange={e => setter(e.target.value)} placeholder="0" style={inputStyle} />
+                      </div>
+                    ))}
+                    {autoError && <p style={{ color: "#ff7a7a", fontFamily: "sans-serif", fontSize: 12, margin: 0 }}>{autoError}</p>}
+                    {autoCategory && (
+                      <div style={{ background: `linear-gradient(135deg, ${PRICING[autoCategory].color}55, ${PRICING[autoCategory].color}88)`, border: `1px solid ${PRICING[autoCategory].color}`, borderRadius: 10, padding: "10px 14px" }}>
+                        <div style={{ color: "#a0c4e8", fontFamily: "sans-serif", fontSize: 11, marginBottom: 2 }}>Nustatyta kategorija:</div>
+                        <div style={{ color: "#fff", fontFamily: "sans-serif", fontWeight: 700, fontSize: 16 }}>{PRICING[autoCategory].label}</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Days + Qty */}
+                <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                      <label style={{ color: "#7aacdd", fontFamily: "sans-serif", fontSize: 12 }}>Sandėliavimo dienų skaičius</label>
+                      <span style={{ color: "#fff", fontFamily: "sans-serif", fontWeight: 700, fontSize: 18 }}>{days}</span>
+                    </div>
+                    <input type="range" min="1" max="365" value={days} onChange={e => setDays(Number(e.target.value))} style={{ width: "100%", cursor: "pointer" }} />
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "#4a7aaa", fontFamily: "sans-serif", fontSize: 10 }}>
+                      <span>1 d.</span><span>6 mėn.</span><span>1 metai</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ color: "#7aacdd", fontFamily: "sans-serif", fontSize: 12, display: "block", marginBottom: 6 }}>Prekių kiekis</label>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <button onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ width: 36, height: 36, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, color: "#fff", fontSize: 20, cursor: "pointer", fontFamily: "sans-serif" }}>−</button>
+                      <input type="number" min="1" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                        style={{ flex: 1, textAlign: "center", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "8px", color: "#fff", fontFamily: "sans-serif", fontSize: 16, outline: "none" }} />
+                      <button onClick={() => setQuantity(quantity + 1)} style={{ width: 36, height: 36, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, color: "#fff", fontSize: 20, cursor: "pointer", fontFamily: "sans-serif" }}>+</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right — Results */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: 24, flex: 1 }}>
+                  <h3 style={{ color: "#7aacdd", fontSize: 11, letterSpacing: 3, textTransform: "uppercase", fontFamily: "sans-serif", margin: "0 0 20px" }}>
+                    Vienos prekės kaina
+                  </h3>
+                  {!activeCategory ? (
+                    <p style={{ color: "#4a7aaa", fontFamily: "sans-serif", fontSize: 14, textAlign: "center", marginTop: 40 }}>
+                      {mode === "auto" ? "Įveskite matmenis kairėje" : "Pasirinkite kategoriją"}
+                    </p>
+                  ) : (
+                    <>
+                      {[
+                        ["Priėmimas", reception, "📦", pricing.reception, discounts.reception],
+                        [`Sandėliavimas (${days} d.)`, storageCost, "🏭", (pricing.storage30 / 30) * days, discounts.storage],
+                        ["Apdorojimas", processing, "⚙️", pricing.processing, discounts.processing],
+                      ].map(([label, val, icon, original, disc]) => (
+                        <div key={label} style={{ marginBottom: 14 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5, alignItems: "center" }}>
+                            <span style={{ color: "#a0c4e8", fontFamily: "sans-serif", fontSize: 13 }}>{icon} {label}</span>
+                            <div style={{ textAlign: "right" }}>
+                              {disc > 0 && (
+                                <span style={{ color: "#4a6a88", fontFamily: "sans-serif", fontSize: 11, textDecoration: "line-through", marginRight: 6 }}>{formatEur(original)}</span>
+                              )}
+                              <span style={{ color: disc > 0 ? "#4ac87a" : "#fff", fontFamily: "sans-serif", fontWeight: 600, fontSize: 14 }}>
+                                {formatEur(val)}{disc > 0 ? ` (−${disc}%)` : ""}
+                              </span>
+                            </div>
+                          </div>
+                          <div style={{ height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden" }}>
+                            <div style={{ height: "100%", width: `${pct(val)}%`, background: disc > 0 ? "linear-gradient(90deg, #1a7a4a, #4ac87a)" : "linear-gradient(90deg, #1e5fa8, #4a9fe8)", borderRadius: 2, transition: "width 0.4s ease" }} />
+                          </div>
+                        </div>
+                      ))}
+                      <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", marginTop: 8, paddingTop: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ color: "#7aacdd", fontFamily: "sans-serif", fontSize: 13 }}>Viso / prekei</span>
+                        <span style={{ color: "#4a9fe8", fontFamily: "sans-serif", fontWeight: 700, fontSize: 24 }}>{formatEur(totalPerItem)}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {activeCategory && (
+                  <div style={{ background: "linear-gradient(135deg, #1a3f70, #1e5fa8)", border: "1px solid #2a7ad0", borderRadius: 16, padding: 24 }}>
+                    <div style={{ color: "#7aacdd", fontFamily: "sans-serif", fontSize: 11, letterSpacing: 3, textTransform: "uppercase", marginBottom: 10 }}>
+                      Bendra suma ({quantity} vnt.)
+                    </div>
+                    <div style={{ color: "#fff", fontFamily: "sans-serif", fontWeight: 700, fontSize: "clamp(28px, 5vw, 42px)", letterSpacing: -1 }}>
+                      {formatEur(totalAll)}
+                    </div>
+                    {(discounts.reception > 0 || discounts.storage > 0 || discounts.processing > 0) && (() => {
+                      const origTotal = (pricing.reception + (pricing.storage30 / 30 * days) + pricing.processing) * quantity;
+                      const saved = origTotal - totalAll;
+                      return (
+                        <div style={{ display: "flex", gap: 12, marginTop: 6, alignItems: "center" }}>
+                          <span style={{ color: "#4a708a", fontFamily: "sans-serif", fontSize: 13, textDecoration: "line-through" }}>{formatEur(origTotal)}</span>
+                          <span style={{ background: "rgba(74,200,122,0.2)", color: "#4ac87a", fontFamily: "sans-serif", fontSize: 12, fontWeight: 700, padding: "2px 8px", borderRadius: 20 }}>
+                            Sutaupoma {formatEur(saved)}
+                          </span>
+                        </div>
+                      );
+                    })()}
+                    <div style={{ color: "#a0c4e8", fontFamily: "sans-serif", fontSize: 13, marginTop: 8 }}>
+                      Formulė: {formatEur(reception)} + ({formatEur(PRICING[activeCategory].storage30)}/30 × {days}) + {formatEur(processing)}
+                    </div>
+                  </div>
+                )}
+
+                {activeCategory && (
+                  <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: 16 }}>
+                    <div style={{ color: "#5a8fc2", fontFamily: "sans-serif", fontSize: 10, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>
+                      Kategorijos įkainiai — {PRICING[activeCategory].label}
+                    </div>
+                    {[
+                      ["Priėmimas", formatEur(PRICING[activeCategory].reception)],
+                      ["Sandėliavimas (30 d.)", formatEur(PRICING[activeCategory].storage30)],
+                      ["Sandėliavimas (1 d.)", formatEur(PRICING[activeCategory].storage30 / 30)],
+                      ["Apdorojimas", formatEur(PRICING[activeCategory].processing)],
+                    ].map(([k, v]) => (
+                      <div key={k} style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                        <span style={{ color: "#5a8fc2", fontFamily: "sans-serif", fontSize: 12 }}>{k}</span>
+                        <span style={{ color: "#a0c4e8", fontFamily: "sans-serif", fontSize: 12, fontWeight: 600 }}>{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <p style={{ color: "#2a4a6a", fontFamily: "sans-serif", fontSize: 11, textAlign: "center", marginTop: 24 }}>
+              * Gali būti taikomi papildomi mokesčiai pagal paslaugos taisykles. Sandėlio adresas: Sausupio g. 15A, Vilnius, LT-02301.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<FBPCalculator />);
+  </script>
+</body>
+</html>
