@@ -49,6 +49,7 @@
         html {
             scrollbar-gutter: stable;
             /* FIX: Prevents layout shift when scrollbar appears */
+            overscroll-behavior-y: none;
         }
 
         body {
@@ -61,6 +62,7 @@
             align-items: flex-start;
             position: relative;
             transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            overscroll-behavior-y: none;
         }
 
         /* Side-mounted background scene (monkeys / GIFs / hidden) */
@@ -1759,8 +1761,8 @@
     <div class="container" style="position: relative;">
         <div class="bg-toggle-container">
             <button class="bg-toggle-btn" id="bgToggle" title="Cycle background mode">
-                <img src="images/favicon_munke.png" alt="Toggle" class="icon">
-                <span class="text">MUNKE.</span>
+                <img src="images/no_monkey_icon.png" alt="Toggle" class="icon large-scale">
+                <span class="text">HIDE.</span>
             </button>
             <button class="bg-toggle-btn" id="darkBgToggle" title="Toggle dark background mode">
                 <span class="emoji-icon" aria-hidden="true">🌙</span>
@@ -2644,13 +2646,13 @@ function reply(obj) {
             if (!btn || !icon || !text) return;
 
             if (mode === 'gifs') {
-                icon.src = 'images/favicon_munke.png';
-                icon.classList.remove('large-scale');
+                icon.src = 'images/no_monkey_icon.png';
+                icon.classList.add('large-scale');
                 text.textContent = 'HIDE.';
                 btn.title = 'Background: cinematic side GIFs (click to hide)';
             } else {
-                icon.src = 'images/no_monkey_icon.png';
-                icon.classList.add('large-scale');
+                icon.src = 'images/favicon_munke.png';
+                icon.classList.remove('large-scale');
                 text.textContent = 'MUNKE.';
                 btn.title = 'Background hidden (click to show GIF background)';
             }
