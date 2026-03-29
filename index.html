@@ -3245,10 +3245,28 @@ function reply(obj) {
                 const filename = group.outputFilename || buildOutputFilename1(group.fileBase, rowCount);
                 const wbout = XLSX.write(newWorkbook, { bookType: 'xlsx', type: 'array' });
 
-                const fileHandle = await outputHandle1.getFileHandle(filename, { create: true });
-                const writable = await fileHandle.createWritable();
-                await writable.write(wbout);
-                await writable.close();
+                // Retry up to 3 times on InvalidStateError — Windows can transiently
+                // invalidate the directory handle's cached state when antivirus or
+                // cloud sync (OneDrive etc.) touches files mid-operation.
+                let writeAttempts = 0;
+                while (true) {
+                    try {
+                        const fileHandle = await outputHandle1.getFileHandle(filename, { create: true });
+                        const writable = await fileHandle.createWritable();
+                        await writable.write(wbout);
+                        await writable.close();
+                        break;
+                    } catch (writeErr) {
+                        const isStaleHandle = writeErr.name === 'InvalidStateError' ||
+                            (writeErr.message && writeErr.message.includes('state had changed'));
+                        if (isStaleHandle && writeAttempts < 3) {
+                            writeAttempts++;
+                            await new Promise(resolve => setTimeout(resolve, 300 * writeAttempts));
+                        } else {
+                            throw writeErr;
+                        }
+                    }
+                }
 
                 processed++;
                 const percent = Math.round((processed / groupEntries.length) * 100);
