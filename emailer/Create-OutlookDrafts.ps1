@@ -710,7 +710,19 @@ $resultPayload = [pscustomobject]@{
 }
 
 $resultPath = Join-Path -Path (Split-Path -Parent $jobsFile) -ChildPath 'outlook-draft-results.json'
-$resultPayload | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $resultPath -Encoding UTF8
+$jsonContent = $resultPayload | ConvertTo-Json -Depth 100
+$maxRetries = 5
+$retryDelay = 2
+for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
+    try {
+        [System.IO.File]::WriteAllText($resultPath, $jsonContent, [System.Text.Encoding]::UTF8)
+        break
+    } catch [System.IO.IOException] {
+        if ($attempt -eq $maxRetries) { throw }
+        Write-Warning "Results file is locked (attempt $attempt/$maxRetries), retrying in ${retryDelay}s..."
+        Start-Sleep -Seconds $retryDelay
+    }
+}
 
 Write-Host ""
 Write-Host "Done. Created/validated: $created | Failed: $failed" -ForegroundColor Cyan
