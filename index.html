@@ -533,30 +533,24 @@
         }
 
         .tab {
-            padding: 12px 24px;
-            /* Substantial padding */
+            padding: 10px 14px;
             cursor: pointer;
             font-weight: 500;
             color: var(--text-main);
             border-radius: 11px;
-            /* Matches track radius minus padding */
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 16px;
-            /* Larger text for "Application Section" feel */
+            font-size: 13px;
             border: none;
             background: transparent;
             margin: 0;
             text-align: center;
             min-width: unset;
             flex: 1;
-            /* Distribute space */
             white-space: nowrap;
             display: flex;
-            /* Centering */
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            /* Gap for icon if present (it is in HTML text) */
+            gap: 5px;
         }
 
         /* Embedded replacement for legacy email generator (Tab 2) */
@@ -1736,6 +1730,127 @@
         textarea {
             font-family: inherit;
         }
+
+        /* ===== Sheet Splitter Tab ===== */
+        .ss-checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .ss-check-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .ss-check-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+            cursor: pointer;
+            margin: 0;
+            flex-shrink: 0;
+        }
+
+        .ss-col-section {
+            margin-top: 4px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .ss-col-section select {
+            width: 100%;
+        }
+
+        .ss-zip-note {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: rgba(0, 122, 255, 0.06);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 122, 255, 0.1);
+        }
+
+        /* Results panel */
+        .ss-results {
+            margin-top: 20px;
+            background: white;
+            border-radius: var(--radius-md);
+            border: 1px solid #e2e8f0;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .ss-results.hidden {
+            display: none;
+        }
+
+        .ss-results-summary {
+            padding: 14px 20px;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--text-main);
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .ss-results-list {
+            padding: 8px 0;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .ss-result-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 20px;
+            font-size: 13px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .ss-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .ss-result-item.ss-matched {
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .ss-result-item.ss-unmatched {
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .ss-result-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        body.dark-bg .ss-results {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        body.dark-bg .ss-results-summary {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        body.dark-bg .ss-result-item {
+            border-color: rgba(255, 255, 255, 0.04);
+        }
     </style>
 </head>
 
@@ -1783,6 +1898,9 @@
             </div>
             <div class="tab" data-tab="emailer">
                 📧 Generate Emails
+            </div>
+            <div class="tab" data-tab="sheetsplitter">
+                ✂️ Sheet Splitter
             </div>
             <div class="tab" data-tab="fbpcalc">
                 🧮 FBP Calc
@@ -1939,6 +2057,91 @@ Best regards</textarea>
                     • Email files (.eml) will open in Outlook when double-clicked<br>
                     • All recipients from the Excel file will be in the "To:" field
                 </div>
+            </div>
+
+            <!-- Tab: Sheet Splitter -->
+            <div class="tab-content" id="sheetsplitter">
+                <div class="info-box">
+                    <strong>Sheet Splitter:</strong> Upload a workbook and a match list — one .xlsx file is saved per matched sheet.
+                </div>
+
+                <!-- Step 1: Source file -->
+                <div class="section">
+                    <div class="section-title">📂 Step 1: Upload Source Workbook</div>
+                    <div class="upload-area" id="uploadAreaSource5">
+                        <div class="upload-icon">📂</div>
+                        <p style="margin-bottom: 10px; color: #666;"><strong>Click to upload</strong> or drag and drop</p>
+                        <p style="font-size: 14px; color: #999;">Excel files (.xlsx / .xlsm)</p>
+                        <input type="file" id="fileInputSource5" accept=".xlsx,.xlsm">
+                    </div>
+                    <div class="file-info" id="sourceFileInfo5">
+                        <div class="file-name" id="sourceFileName5"></div>
+                        <div class="file-details" id="sourceFileDetails5"></div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Match list file -->
+                <div class="section">
+                    <div class="section-title">🔍 Step 2: Upload Match List</div>
+                    <div class="upload-area compact" id="uploadAreaMatch5">
+                        <div class="upload-icon">📋</div>
+                        <div>
+                            <p style="margin-bottom: 4px; color: #666;"><strong>Click to upload</strong> or drag and drop</p>
+                            <p style="font-size: 13px; color: #999;">Excel file — column A, sheet 1 — one term per row</p>
+                        </div>
+                        <input type="file" id="fileInputMatch5" accept=".xlsx,.xlsm">
+                    </div>
+                    <div class="file-info" id="matchFileInfo5">
+                        <div class="file-name" id="matchFileName5"></div>
+                        <div class="file-details" id="matchFileDetails5"></div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Match options -->
+                <div class="section">
+                    <div class="section-title">⚙️ Step 3: Match Options</div>
+                    <div class="ss-checkbox-group">
+                        <label class="ss-check-label">
+                            <input type="checkbox" id="chkSheetName5" checked>
+                            Match against sheet name
+                        </label>
+                        <label class="ss-check-label">
+                            <input type="checkbox" id="chkColumn5" checked>
+                            Match against column:
+                        </label>
+                    </div>
+                    <div id="colSection5" class="ss-col-section">
+                        <select id="colDropdown5">
+                            <option value="">-- Upload source file first --</option>
+                        </select>
+                        <p style="font-size: 12px; color: #999; margin-top: 6px;">Headers read from sheet 1. Same column letter is searched across all sheets.</p>
+                    </div>
+                </div>
+
+                <!-- Step 4: Output folder -->
+                <div class="section" id="folderSection5">
+                    <div class="section-title">💾 Step 4: Output Folder</div>
+                    <button class="btn secondary" id="selectFolder5">Select Output Folder</button>
+                    <div class="folder-info" id="folderName5"></div>
+                    <p class="ss-zip-note" id="zipFallbackNote5" style="display:none;">Folder picker not supported in this browser — files will be downloaded as a single ZIP.</p>
+                </div>
+
+                <!-- Action button -->
+                <button class="btn" id="splitBtn5">✂️ Split &amp; Download</button>
+
+                <!-- Progress -->
+                <div class="progress" id="progress5" style="display:none;">
+                    <p id="progressLabel5" style="margin-bottom: 10px; color: #666;">Processing...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill5">0%</div>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="status" id="status5"></div>
+
+                <!-- Results panel -->
+                <div class="ss-results hidden" id="resultsPanel5"></div>
             </div>
 
             <!-- Tab 3: FBP Calculator -->
@@ -4071,6 +4274,383 @@ function reply(obj) {
             status4.textContent = message;
             status4.className = 'status show ' + type;
             status4.style.whiteSpace = 'pre-line';
+        }
+
+        // ============= SHEET SPLITTER TAB =============
+        let sourceWb5 = null;
+        let sourceBaseName5 = '';
+        let matchTerms5 = [];
+        let outputHandle5 = null;
+
+        const uploadAreaSource5 = document.getElementById('uploadAreaSource5');
+        const fileInputSource5  = document.getElementById('fileInputSource5');
+        const uploadAreaMatch5  = document.getElementById('uploadAreaMatch5');
+        const fileInputMatch5   = document.getElementById('fileInputMatch5');
+        const sourceFileInfo5   = document.getElementById('sourceFileInfo5');
+        const sourceFileName5El = document.getElementById('sourceFileName5');
+        const sourceFileDetails5El = document.getElementById('sourceFileDetails5');
+        const matchFileInfo5    = document.getElementById('matchFileInfo5');
+        const matchFileName5El  = document.getElementById('matchFileName5');
+        const matchFileDetails5El = document.getElementById('matchFileDetails5');
+        const chkSheetName5     = document.getElementById('chkSheetName5');
+        const chkColumn5        = document.getElementById('chkColumn5');
+        const colSection5       = document.getElementById('colSection5');
+        const colDropdown5      = document.getElementById('colDropdown5');
+        const folderSection5    = document.getElementById('folderSection5');
+        const selectFolder5Btn  = document.getElementById('selectFolder5');
+        const folderName5El     = document.getElementById('folderName5');
+        const zipFallbackNote5  = document.getElementById('zipFallbackNote5');
+        const splitBtn5         = document.getElementById('splitBtn5');
+        const progress5         = document.getElementById('progress5');
+        const progressFill5     = document.getElementById('progressFill5');
+        const progressLabel5    = document.getElementById('progressLabel5');
+        const status5           = document.getElementById('status5');
+        const resultsPanel5     = document.getElementById('resultsPanel5');
+
+        // If File System Access API is unavailable, hide folder picker and show ZIP note
+        if (!supportsFS) {
+            selectFolder5Btn.style.display = 'none';
+            zipFallbackNote5.style.display = 'block';
+        }
+
+        // --- Source file upload wiring ---
+        uploadAreaSource5.addEventListener('click', () => fileInputSource5.click());
+        uploadAreaSource5.addEventListener('dragover', e => { e.preventDefault(); uploadAreaSource5.classList.add('dragover'); });
+        uploadAreaSource5.addEventListener('dragleave', () => uploadAreaSource5.classList.remove('dragover'));
+        uploadAreaSource5.addEventListener('drop', e => {
+            e.preventDefault();
+            uploadAreaSource5.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) handleSourceFile5(e.dataTransfer.files[0]);
+        });
+        fileInputSource5.addEventListener('change', e => {
+            if (e.target.files.length > 0) handleSourceFile5(e.target.files[0]);
+        });
+
+        // --- Match list file upload wiring ---
+        uploadAreaMatch5.addEventListener('click', () => fileInputMatch5.click());
+        uploadAreaMatch5.addEventListener('dragover', e => { e.preventDefault(); uploadAreaMatch5.classList.add('dragover'); });
+        uploadAreaMatch5.addEventListener('dragleave', () => uploadAreaMatch5.classList.remove('dragover'));
+        uploadAreaMatch5.addEventListener('drop', e => {
+            e.preventDefault();
+            uploadAreaMatch5.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) handleMatchFile5(e.dataTransfer.files[0]);
+        });
+        fileInputMatch5.addEventListener('change', e => {
+            if (e.target.files.length > 0) handleMatchFile5(e.target.files[0]);
+        });
+
+        // --- Toggle column section when checkbox changes ---
+        chkColumn5.addEventListener('change', () => {
+            colSection5.style.display = chkColumn5.checked ? '' : 'none';
+        });
+
+        // --- Folder picker ---
+        if (supportsFS) {
+            selectFolder5Btn.addEventListener('click', async () => {
+                try {
+                    outputHandle5 = await window.showDirectoryPicker();
+                    folderName5El.textContent = '✓ Selected: ' + outputHandle5.name;
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        showStatus5('Could not open folder picker: ' + err.message, 'error');
+                    }
+                }
+            });
+        }
+
+        // --- Split button ---
+        splitBtn5.addEventListener('click', runSplitter5);
+
+        function handleSourceFile5(file) {
+            if (!file.name.match(/\.xls[xm]$/i)) {
+                showStatus5('Please select an Excel file (.xlsx or .xlsm).', 'error');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                try {
+                    sourceWb5 = XLSX.read(ev.target.result, { type: 'array' });
+                    sourceBaseName5 = file.name.replace(/\.[^.]+$/, '');
+
+                    const sheetCount = sourceWb5.SheetNames.length;
+                    sourceFileName5El.textContent = file.name;
+                    sourceFileDetails5El.textContent = sheetCount + ' sheet' + (sheetCount !== 1 ? 's' : '') +
+                        ' — ' + (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+                    sourceFileInfo5.classList.add('show');
+
+                    // Populate column dropdown from first sheet headers
+                    const firstSheet = sourceWb5.Sheets[sourceWb5.SheetNames[0]];
+                    const rows5 = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                    colDropdown5.innerHTML = '<option value="">-- Select column to match --</option>';
+                    if (rows5.length > 0) {
+                        rows5[0].forEach(function (header, idx) {
+                            const letter = getColumnLetter(idx);
+                            const opt = document.createElement('option');
+                            opt.value = idx;
+                            opt.textContent = letter + ': ' + (header || 'Column ' + (idx + 1));
+                            colDropdown5.appendChild(opt);
+                        });
+                    }
+
+                    clearResults5();
+                    hideStatus5();
+                } catch (err) {
+                    showStatus5('Error reading file: ' + err.message, 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function handleMatchFile5(file) {
+            if (!file.name.match(/\.xls[xm]$/i)) {
+                showStatus5('Please select an Excel file (.xlsx or .xlsm) for the match list.', 'error');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                try {
+                    const wb = XLSX.read(ev.target.result, { type: 'array' });
+                    const sheet = wb.Sheets[wb.SheetNames[0]]; // always sheet 1
+                    const rows5 = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                    matchTerms5 = rows5
+                        .map(function (r) { return String(r[0] !== undefined && r[0] !== null ? r[0] : '').trim(); })
+                        .filter(function (s) { return s.length > 0; });
+
+                    matchFileName5El.textContent = file.name;
+                    matchFileDetails5El.textContent = matchTerms5.length + ' match term' + (matchTerms5.length !== 1 ? 's' : '') + ' loaded';
+                    matchFileInfo5.classList.add('show');
+
+                    clearResults5();
+                    hideStatus5();
+                } catch (err) {
+                    showStatus5('Error reading match list: ' + err.message, 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function runSplitter5() {
+            // Validate inputs
+            if (!sourceWb5) {
+                showStatus5('Please upload the source workbook first (Step 1).', 'error');
+                return;
+            }
+            if (matchTerms5.length === 0) {
+                showStatus5('Please upload a match list file first (Step 2).', 'error');
+                return;
+            }
+            const useSheetName = chkSheetName5.checked;
+            const useColumn    = chkColumn5.checked;
+            if (!useSheetName && !useColumn) {
+                showStatus5('Please enable at least one match option (sheet name or column).', 'error');
+                return;
+            }
+            const colIdx = parseInt(colDropdown5.value, 10);
+            if (useColumn && isNaN(colIdx)) {
+                showStatus5('Please select a column to match against.', 'error');
+                return;
+            }
+            if (supportsFS && !outputHandle5) {
+                showStatus5('Please select an output folder first (Step 4).', 'error');
+                return;
+            }
+
+            splitBtn5.disabled = true;
+            clearResults5();
+            progress5.style.display = 'block';
+            progressFill5.style.width = '0%';
+            progressFill5.textContent = '0%';
+            progressLabel5.textContent = 'Scanning sheets...';
+            showStatus5('Processing…', 'info');
+
+            // Build lowercase term list
+            const terms5 = matchTerms5.map(function (t) { return t.toLowerCase(); });
+
+            // Evaluate each sheet
+            const matched5   = [];
+            const unmatched5 = [];
+            const colLetter5 = useColumn ? getColumnLetter(colIdx) : '';
+            const colRegex5  = useColumn ? new RegExp('^' + colLetter5 + '\\d+$') : null;
+
+            sourceWb5.SheetNames.forEach(function (sheetName) {
+                const sheet = sourceWb5.Sheets[sheetName];
+                let isMatch = false;
+
+                if (useSheetName && terms5.some(function (t) { return sheetName.toLowerCase().includes(t); })) {
+                    isMatch = true;
+                }
+
+                if (!isMatch && useColumn && sheet) {
+                    const keys = Object.keys(sheet).filter(function (k) { return !k.startsWith('!'); });
+                    for (let ki = 0; ki < keys.length; ki++) {
+                        if (colRegex5.test(keys[ki])) {
+                            const cellObj = sheet[keys[ki]];
+                            const val = String(cellObj && cellObj.v !== undefined && cellObj.v !== null ? cellObj.v : '').toLowerCase();
+                            if (terms5.some(function (t) { return val.includes(t); })) {
+                                isMatch = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (isMatch) matched5.push(sheetName);
+                else unmatched5.push(sheetName);
+            });
+
+            if (matched5.length === 0) {
+                showStatus5('No sheets matched. Try different search terms.', 'error');
+                progress5.style.display = 'none';
+                splitBtn5.disabled = false;
+                showResults5(matched5, unmatched5);
+                return;
+            }
+
+            try {
+                if (supportsFS && outputHandle5) {
+                    await ss5WriteToFolder(matched5);
+                } else {
+                    await ss5WriteToZip(matched5);
+                }
+                showStatus5(
+                    '✓ Done! ' + matched5.length + ' of ' + sourceWb5.SheetNames.length +
+                    ' sheet' + (matched5.length !== 1 ? 's' : '') + ' exported.',
+                    'success'
+                );
+            } catch (err) {
+                showStatus5('Error writing files: ' + err.message, 'error');
+            }
+
+            progress5.style.display = 'none';
+            splitBtn5.disabled = false;
+            showResults5(matched5, unmatched5);
+        }
+
+        async function ss5WriteToFolder(matchedSheets) {
+            for (let i = 0; i < matchedSheets.length; i++) {
+                const sheetName = matchedSheets[i];
+                const newWb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(newWb, sourceWb5.Sheets[sheetName], sheetName);
+                const wbout = XLSX.write(newWb, { bookType: 'xlsx', type: 'array' });
+                const filename = sanitizeFilename(sourceBaseName5 + '_' + sheetName) + '.xlsx';
+
+                progressLabel5.textContent = 'Writing ' + (i + 1) + ' of ' + matchedSheets.length + ': ' + sheetName;
+                const pct = Math.round(((i + 0.5) / matchedSheets.length) * 100);
+                progressFill5.style.width = pct + '%';
+                progressFill5.textContent = pct + '%';
+
+                // Write with retry on stale handle (antivirus / cloud sync can briefly invalidate it)
+                let attempts = 0;
+                while (true) {
+                    try {
+                        const fh = await outputHandle5.getFileHandle(filename, { create: true });
+                        const writable = await fh.createWritable();
+                        await writable.write(wbout);
+                        await writable.close();
+                        break;
+                    } catch (writeErr) {
+                        const stale = writeErr.name === 'InvalidStateError' ||
+                            (writeErr.message && writeErr.message.includes('state had changed'));
+                        if (stale && attempts < 3) {
+                            attempts++;
+                            await new Promise(function (r) { setTimeout(r, 400 * attempts); });
+                        } else {
+                            throw writeErr;
+                        }
+                    }
+                }
+
+                // 400ms pace between writes — avoids triggering AV bulk-write heuristics
+                if (i < matchedSheets.length - 1) {
+                    await new Promise(function (r) { setTimeout(r, 400); });
+                }
+            }
+            progressFill5.style.width = '100%';
+            progressFill5.textContent = '100%';
+        }
+
+        async function ss5WriteToZip(matchedSheets) {
+            const zip = new JSZip();
+
+            for (let i = 0; i < matchedSheets.length; i++) {
+                const sheetName = matchedSheets[i];
+                const newWb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(newWb, sourceWb5.Sheets[sheetName], sheetName);
+                const wbout = XLSX.write(newWb, { bookType: 'xlsx', type: 'array' });
+                const filename = sanitizeFilename(sourceBaseName5 + '_' + sheetName) + '.xlsx';
+                zip.file(filename, wbout);
+
+                const pct = Math.round(((i + 1) / matchedSheets.length) * 90);
+                progressFill5.style.width = pct + '%';
+                progressFill5.textContent = pct + '%';
+                progressLabel5.textContent = 'Preparing ' + (i + 1) + ' of ' + matchedSheets.length + '…';
+
+                // Small yield so the browser stays responsive
+                await new Promise(function (r) { setTimeout(r, 50); });
+            }
+
+            progressLabel5.textContent = 'Creating ZIP…';
+            const blob = await zip.generateAsync({ type: 'blob' });
+            progressFill5.style.width = '100%';
+            progressFill5.textContent = '100%';
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = sanitizeFilename(sourceBaseName5) + '_sheets.zip';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function showResults5(matched, unmatched) {
+            resultsPanel5.classList.remove('hidden');
+
+            const summary = document.createElement('div');
+            summary.className = 'ss-results-summary';
+            summary.textContent = matched.length + ' of ' + (matched.length + unmatched.length) + ' sheets matched';
+
+            const list = document.createElement('div');
+            list.className = 'ss-results-list';
+
+            matched.forEach(function (name) {
+                const item = document.createElement('div');
+                item.className = 'ss-result-item ss-matched';
+                item.innerHTML = '<span class="ss-result-icon">✅</span><span>' + escapeHtml5(name) + '</span>';
+                list.appendChild(item);
+            });
+
+            unmatched.forEach(function (name) {
+                const item = document.createElement('div');
+                item.className = 'ss-result-item ss-unmatched';
+                item.innerHTML = '<span class="ss-result-icon">—</span><span>' + escapeHtml5(name) + '</span>';
+                list.appendChild(item);
+            });
+
+            resultsPanel5.innerHTML = '';
+            resultsPanel5.appendChild(summary);
+            resultsPanel5.appendChild(list);
+        }
+
+        function clearResults5() {
+            resultsPanel5.classList.add('hidden');
+            resultsPanel5.innerHTML = '';
+        }
+
+        function showStatus5(message, type) {
+            status5.textContent = message;
+            status5.className = 'status show ' + type;
+        }
+
+        function hideStatus5() {
+            status5.className = 'status';
+        }
+
+        function escapeHtml5(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
         }
     </script>
 </body>
