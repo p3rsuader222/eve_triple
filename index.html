@@ -1860,14 +1860,14 @@
 
         <div class="bg-scene__side bg-scene__side--left">
             <div class="bg-scene__layer bg-scene__monkey"></div>
-            <img class="bg-scene__layer bg-scene__gif" src="images/mrgurnsss-friday.gif" alt="">
+            <img id="bgGifLeft" class="bg-scene__layer bg-scene__gif" src="images/mrgurnsss-friday.gif" alt="">
             <div class="bg-scene__layer bg-scene__gif-fade"></div>
             <div class="bg-scene__layer bg-scene__gif-tint"></div>
         </div>
 
         <div class="bg-scene__side bg-scene__side--right">
             <div class="bg-scene__layer bg-scene__monkey"></div>
-            <img class="bg-scene__layer bg-scene__gif" src="images/monkey-chill-monkey.gif" alt="">
+            <img id="bgGifRight" class="bg-scene__layer bg-scene__gif" src="images/monkey-chill-monkey.gif" alt="">
             <div class="bg-scene__layer bg-scene__gif-fade"></div>
             <div class="bg-scene__layer bg-scene__gif-tint"></div>
         </div>
@@ -3005,6 +3005,19 @@ function reply(obj) {
         bindEmbeddedFrameAutoHeight('embeddedFbpCalcFrame', resizeEmbeddedFbpCalcFrame);
 
         // Tab switching
+        const BG_GIFS = {
+            default: { left: 'images/mrgurnsss-friday.gif', right: 'images/monkey-chill-monkey.gif' },
+            sheetsplitter: { left: 'images/colab-munke.gif', right: 'images/colab-munke.gif' }
+        };
+        const bgGifLeft  = document.getElementById('bgGifLeft');
+        const bgGifRight = document.getElementById('bgGifRight');
+
+        function setTabGifs(tabName) {
+            const gifs = BG_GIFS[tabName] || BG_GIFS.default;
+            if (bgGifLeft)  bgGifLeft.src  = gifs.left;
+            if (bgGifRight) bgGifRight.src = gifs.right;
+        }
+
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 const targetTab = tab.dataset.tab;
@@ -3014,6 +3027,8 @@ function reply(obj) {
 
                 tab.classList.add('active');
                 document.getElementById(targetTab).classList.add('active');
+
+                setTabGifs(targetTab);
 
                 if (targetTab === 'emailer') {
                     setTimeout(resizeEmbeddedEmailerFrame, 50);
