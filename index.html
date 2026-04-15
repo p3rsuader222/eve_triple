@@ -1899,11 +1899,11 @@
             <div class="tab" data-tab="emailer">
                 📧 Generate Emails
             </div>
-            <div class="tab" data-tab="sheetsplitter">
-                ✂️ Sheet Splitter
-            </div>
             <div class="tab" data-tab="fbpcalc">
                 🧮 FBP Calc
+            </div>
+            <div class="tab" data-tab="sheetsplitter">
+                ✂️ Sheet Splitter
             </div>
             <div class="tab" data-tab="gsync">
                 🔄 Sheets Sync
@@ -2059,6 +2059,27 @@ Best regards</textarea>
                 </div>
             </div>
 
+            <!-- Tab 3: FBP Calculator -->
+            <div class="tab-content" id="fbpcalc">
+                <div class="embedded-emailer-shell">
+                    <div class="embedded-emailer-head">
+                        <h3>FBP Calculator</h3>
+                        <p>Embedded addon calculator</p>
+                    </div>
+                    <iframe
+                        class="embedded-emailer-frame"
+                        id="embeddedFbpCalcFrame"
+                        title="FBP Calculator"
+                        src="addon/FBP_Skaiciuokle.html"
+                        loading="lazy"
+                        scrolling="no">
+                    </iframe>
+                    <div class="embedded-emailer-fallback">
+                        If the panel does not load, open <a href="addon/FBP_Skaiciuokle.html" target="_blank" rel="noopener">the FBP calculator in a new tab</a>.
+                    </div>
+                </div>
+            </div>
+
             <!-- Tab: Sheet Splitter -->
             <div class="tab-content" id="sheetsplitter">
                 <div class="info-box">
@@ -2142,27 +2163,6 @@ Best regards</textarea>
 
                 <!-- Results panel -->
                 <div class="ss-results hidden" id="resultsPanel5"></div>
-            </div>
-
-            <!-- Tab 3: FBP Calculator -->
-            <div class="tab-content" id="fbpcalc">
-                <div class="embedded-emailer-shell">
-                    <div class="embedded-emailer-head">
-                        <h3>FBP Calculator</h3>
-                        <p>Embedded addon calculator</p>
-                    </div>
-                    <iframe
-                        class="embedded-emailer-frame"
-                        id="embeddedFbpCalcFrame"
-                        title="FBP Calculator"
-                        src="addon/FBP_Skaiciuokle.html"
-                        loading="lazy"
-                        scrolling="no">
-                    </iframe>
-                    <div class="embedded-emailer-fallback">
-                        If the panel does not load, open <a href="addon/FBP_Skaiciuokle.html" target="_blank" rel="noopener">the FBP calculator in a new tab</a>.
-                    </div>
-                </div>
             </div>
 
             <!-- Tab 4: Google Sheets Sync -->
