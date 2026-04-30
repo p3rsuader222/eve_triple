@@ -957,6 +957,10 @@ textarea {
     display: none;
 }
 
+.review-actions {
+    margin-bottom: 10px;
+}
+
 .review-help {
     margin: 0 0 10px;
 }
