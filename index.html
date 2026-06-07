@@ -504,6 +504,35 @@
             line-height: 1;
         }
 
+        .language-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-light);
+            border-radius: 50px;
+            padding: 7px 12px;
+            box-shadow: var(--shadow-sm);
+            color: var(--text-main);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .language-control select {
+            width: auto;
+            min-width: 74px;
+            margin: 0;
+            padding: 4px 22px 4px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(60, 60, 67, 0.16);
+            background: rgba(255, 255, 255, 0.78);
+            color: var(--text-main);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
         .header p {
             color: var(--text-secondary);
             font-size: 16px;
@@ -1883,6 +1912,14 @@
                 <span class="emoji-icon" aria-hidden="true">🌙</span>
                 <span class="text">Dark background</span>
             </button>
+            <label class="language-control" for="languageSelect">
+                <span>Language</span>
+                <select id="languageSelect" aria-label="Language">
+                    <option value="en">EN</option>
+                    <option value="lv">LV</option>
+                    <option value="et">ET</option>
+                </select>
+            </label>
         </div>
         <div class="header">
             <h1>
@@ -2339,7 +2376,251 @@ Best regards</textarea>
         </div>
     </div>
 
+    <script src="i18n.js"></script>
     <script>
+        const eveTranslations = {
+            lv: {
+                "Toggle": "Pārslēgt",
+                "Cycle background mode": "Mainīt fona režīmu",
+                "Toggle dark background mode": "Ieslēgt vai izslēgt tumšo fonu",
+                "Dark background": "Tumšs fons",
+                "Light background": "Gaišs fons",
+                "Language": "Valoda",
+                "Split Excel files by criteria and generate email drafts": "Sadaliet Excel failus pēc kritērijiem un ģenerējiet e-pasta melnrakstus",
+                "🔀 Split by Criteria": "🔀 Sadalīt pēc kritērija",
+                "📧 Generate Emails": "📧 Ģenerēt e-pastus",
+                "🧮 FBP Calc": "🧮 FBP kalkulators",
+                "✂️ Sheet Splitter": "✂️ Lapu sadalītājs",
+                "🔄 Sheets Sync": "🔄 Sheets sinhronizācija",
+                "📚 Knowledge Base": "📚 Zināšanu bāze",
+                "Step 1:": "1. solis:",
+                "Upload your Excel file and split it based on unique values in any column": "Augšupielādējiet Excel failu un sadaliet to pēc unikālām vērtībām jebkurā kolonnā",
+                "Click to upload": "Klikšķiniet, lai augšupielādētu",
+                "or drag and drop": "vai ievelciet un nometiet",
+                "Excel files (.xlsx) only": "Tikai Excel faili (.xlsx)",
+                "📑 Select Excel Sheet": "📑 Izvēlieties Excel lapu",
+                "Choose the worksheet to split:": "Izvēlieties darblapu, ko sadalīt:",
+                "Select the column to split by (each unique value will create a separate file):": "Izvēlieties kolonnu sadalīšanai (katra unikālā vērtība izveidos atsevišķu failu):",
+                "-- Select a column --": "-- Izvēlieties kolonnu --",
+                "📂 Output Location:": "📂 Izvades vieta:",
+                "Choose where to save the split files": "Izvēlieties, kur saglabāt sadalītos failus",
+                "Select Output Folder": "Izvēlieties izvades mapi",
+                "Save to Selected Folder": "Saglabāt izvēlētajā mapē",
+                "Download as ZIP File": "Lejupielādēt kā ZIP failu",
+                "Processing files...": "Apstrādā failus...",
+                "💡 Next Step:": "💡 Nākamais solis:",
+                "After splitting, switch to the \"Generate Emails\" tab to create email drafts for each file.": "Pēc sadalīšanas pārejiet uz cilni \"Ģenerēt e-pastus\", lai katram failam izveidotu e-pasta melnrakstus.",
+                "Step 2: Generate Outlook Drafts": "2. solis: ģenerēt Outlook melnrakstus",
+                "Pick files → Preview → Generate": "Izvēlieties failus → Priekšskatiet → Ģenerējiet",
+                "Outlook Draft Prep": "Outlook melnrakstu sagatavošana",
+                "If the panel does not load, open": "Ja panelis neielādējas, atveriet",
+                "the email generator in a new tab": "e-pasta ģeneratoru jaunā cilnē",
+                "FBP Calculator": "FBP kalkulators",
+                "Embedded addon calculator": "Iegultais papildinājuma kalkulators",
+                "the FBP calculator in a new tab": "FBP kalkulatoru jaunā cilnē",
+                "Sheet Splitter:": "Lapu sadalītājs:",
+                "Upload a workbook and a match list — one .xlsx file is saved per matched sheet.": "Augšupielādējiet darbgrāmatu un atbilstību sarakstu — katrai atbilstošai lapai tiek saglabāts viens .xlsx fails.",
+                "📂 Step 1: Upload Source Workbook": "📂 1. solis: augšupielādēt avota darbgrāmatu",
+                "Excel files (.xlsx / .xlsm)": "Excel faili (.xlsx / .xlsm)",
+                "🔍 Step 2: Upload Match List": "🔍 2. solis: augšupielādēt atbilstību sarakstu",
+                "Excel file — column A, sheet 1 — one term per row": "Excel fails — A kolonna, 1. lapa — viens termins katrā rindā",
+                "⚙️ Step 3: Match Options": "⚙️ 3. solis: atbilstības opcijas",
+                "Match against sheet name": "Meklēt atbilstību lapas nosaukumā",
+                "Match against column:": "Meklēt atbilstību kolonnā:",
+                "-- Upload source file first --": "-- Vispirms augšupielādējiet avota failu --",
+                "Headers read from sheet 1. Same column letter is searched across all sheets.": "Virsraksti tiek nolasīti no 1. lapas. Visās lapās tiek meklēta tā pati kolonnas burta pozīcija.",
+                "💾 Step 4: Output Folder": "💾 4. solis: izvades mape",
+                "Folder picker not supported in this browser — files will be downloaded as a single ZIP.": "Šajā pārlūkā mapes izvēle netiek atbalstīta — faili tiks lejupielādēti kā viens ZIP.",
+                "✂️ Split & Download": "✂️ Sadalīt un lejupielādēt",
+                "Processing...": "Apstrādā...",
+                "🔄 Excel to Google Sheets Sync:": "🔄 Excel uz Google Sheets sinhronizācija:",
+                "Import specific columns from Excel to your Google Sheet with custom column mapping": "Importējiet noteiktas kolonnas no Excel savā Google izklājlapā ar pielāgotu kolonnu kartēšanu",
+                "⚙️ Google Apps Script Web App URL": "⚙️ Google Apps Script tīmekļa lietotnes URL",
+                "This app uses a simple Google Apps Script to write to your sheets.": "Šī lietotne izmanto vienkāršu Google Apps Script, lai rakstītu jūsu izklājlapās.",
+                "Need Setup Help?": "Vajadzīga palīdzība iestatīšanā?",
+                "Check the Knowledge Base": "Skatiet zināšanu bāzi",
+                "for the \"Google Sheets Sync — Complete Setup Guide\".": "sadaļā \"Google Sheets Sync — Complete Setup Guide\".",
+                "Paste your Google Apps Script Web App URL here": "Ielīmējiet Google Apps Script tīmekļa lietotnes URL šeit",
+                "The URL looks like:": "URL izskatās šādi:",
+                "📊 Google Sheets Configuration": "📊 Google Sheets konfigurācija",
+                "Google Sheets URL or ID:": "Google Sheets URL vai ID:",
+                "Paste the full Google Sheets URL or just the spreadsheet ID": "Ielīmējiet pilnu Google Sheets URL vai tikai izklājlapas ID",
+                "Sheet Name (tab name within the spreadsheet):": "Lapas nosaukums (cilnes nosaukums izklājlapā):",
+                "e.g., My Data, Sheet1, Import Data": "piem., Mani dati, Sheet1, Import Data",
+                "Click to upload Excel file": "Klikšķiniet, lai augšupielādētu Excel failu",
+                ".xlsx files only": "Tikai .xlsx faili",
+                "Choose the sheet from your workbook that contains the data you wish to sync.": "Izvēlieties darbgrāmatas lapu ar datiem, kurus vēlaties sinhronizēt.",
+                "✏️ Import Configuration": "✏️ Importēšanas konfigurācija",
+                "Append": "Pievienot",
+                "Add after existing data": "Pievienot aiz esošajiem datiem",
+                "Overwrite": "Pārrakstīt",
+                "Replace existing data": "Aizstāt esošos datus",
+                "📍 Start Row (Optional)": "📍 Sākuma rinda (neobligāti)",
+                "Auto-detect": "Automātiski noteikt",
+                "Leave empty to append at bottom or overwrite from top.": "Atstājiet tukšu, lai pievienotu apakšā vai pārrakstītu no augšas.",
+                "📄 Data Handling": "📄 Datu apstrāde",
+                "Include Excel Headers?": "Iekļaut Excel virsrakstus?",
+                "Uncheck to sync data only (skips row 1 of Excel).": "Noņemiet atzīmi, lai sinhronizētu tikai datus (izlaiž Excel 1. rindu).",
+                "🔗 Column Mapping": "🔗 Kolonnu kartēšana",
+                "Map Excel columns to Google Sheets columns. Use column letters (A, B, C...) for Google Sheets destination.": "Kartējiet Excel kolonnas uz Google Sheets kolonnām. Google Sheets mērķim izmantojiet kolonnu burtus (A, B, C...).",
+                "📗 Excel Column": "📗 Excel kolonna",
+                "📊 Google Sheets Column": "📊 Google Sheets kolonna",
+                "+ Add Column Mapping": "+ Pievienot kolonnu kartējumu",
+                "🚀 Sync to Google Sheets": "🚀 Sinhronizēt ar Google Sheets",
+                "Syncing data...": "Sinhronizē datus...",
+                "💡 Need Setup Help?": "💡 Vajadzīga palīdzība iestatīšanā?",
+                "check the": "skatiet",
+                "(Tab 4) for the": "(4. cilne), lai atrastu",
+                "📚 Knowledge Base:": "📚 Zināšanu bāze:",
+                "Browse guides and documentation for using this app": "Pārlūkojiet šīs lietotnes lietošanas ceļvežus un dokumentāciju",
+                "🔍 Search topics...": "🔍 Meklēt tēmas...",
+                "Excel Splitter — User Guide": "Excel sadalītājs — lietotāja ceļvedis",
+                "Excel Emailer — User Guide": "Excel e-pasta rīks — lietotāja ceļvedis",
+                "Ultimate Excel Power Query Guide — Fully Detailed & Commercial Ready": "Pilns Excel Power Query ceļvedis — detalizēts un gatavs darbam",
+                "Google Sheets Sync — Complete Setup Guide": "Google Sheets sinhronizācija — pilns iestatīšanas ceļvedis",
+                "Your Topic Title Here": "Jūsu tēmas nosaukums šeit",
+                "Background: cinematic side GIFs (click to hide)": "Fons: kinematogrāfiski sānu GIF (klikšķiniet, lai paslēptu)",
+                "Background hidden (click to show GIF background)": "Fons paslēpts (klikšķiniet, lai parādītu GIF fonu)"
+            },
+            et: {
+                "Toggle": "Lülita",
+                "Cycle background mode": "Vaheta taustarežiimi",
+                "Toggle dark background mode": "Lülita tume taust sisse või välja",
+                "Dark background": "Tume taust",
+                "Light background": "Hele taust",
+                "Language": "Keel",
+                "Split Excel files by criteria and generate email drafts": "Jaga Exceli failid kriteeriumide järgi ja loo e-kirjade mustandid",
+                "🔀 Split by Criteria": "🔀 Jaga kriteeriumi järgi",
+                "📧 Generate Emails": "📧 Loo e-kirjad",
+                "🧮 FBP Calc": "🧮 FBP kalkulaator",
+                "✂️ Sheet Splitter": "✂️ Lehtede jagaja",
+                "🔄 Sheets Sync": "🔄 Sheetsi sünkroonimine",
+                "📚 Knowledge Base": "📚 Teadmistebaas",
+                "Step 1:": "1. samm:",
+                "Upload your Excel file and split it based on unique values in any column": "Laadige Exceli fail üles ja jagage see mis tahes veeru unikaalsete väärtuste alusel",
+                "Click to upload": "Klõpsake üleslaadimiseks",
+                "or drag and drop": "või lohistage siia",
+                "Excel files (.xlsx) only": "Ainult Exceli failid (.xlsx)",
+                "📑 Select Excel Sheet": "📑 Valige Exceli leht",
+                "Choose the worksheet to split:": "Valige jagatav tööleht:",
+                "Select the column to split by (each unique value will create a separate file):": "Valige veerg, mille järgi jagada (iga unikaalne väärtus loob eraldi faili):",
+                "-- Select a column --": "-- Valige veerg --",
+                "📂 Output Location:": "📂 Väljundi asukoht:",
+                "Choose where to save the split files": "Valige, kuhu jagatud failid salvestada",
+                "Select Output Folder": "Valige väljundkaust",
+                "Save to Selected Folder": "Salvesta valitud kausta",
+                "Download as ZIP File": "Laadi alla ZIP-failina",
+                "Processing files...": "Töötleb faile...",
+                "💡 Next Step:": "💡 Järgmine samm:",
+                "After splitting, switch to the \"Generate Emails\" tab to create email drafts for each file.": "Pärast jagamist liikuge vahekaardile \"Loo e-kirjad\", et luua iga faili jaoks e-kirja mustand.",
+                "Step 2: Generate Outlook Drafts": "2. samm: loo Outlooki mustandid",
+                "Pick files → Preview → Generate": "Valige failid → Eelvaade → Loo",
+                "Outlook Draft Prep": "Outlooki mustandite ettevalmistus",
+                "If the panel does not load, open": "Kui paneel ei laadi, avage",
+                "the email generator in a new tab": "e-kirjade generaator uuel vahekaardil",
+                "FBP Calculator": "FBP kalkulaator",
+                "Embedded addon calculator": "Manustatud lisamooduli kalkulaator",
+                "the FBP calculator in a new tab": "FBP kalkulaator uuel vahekaardil",
+                "Sheet Splitter:": "Lehtede jagaja:",
+                "Upload a workbook and a match list — one .xlsx file is saved per matched sheet.": "Laadige üles töövihik ja vastete loend — iga sobiva lehe kohta salvestatakse üks .xlsx fail.",
+                "📂 Step 1: Upload Source Workbook": "📂 1. samm: laadige üles lähte-töövihik",
+                "Excel files (.xlsx / .xlsm)": "Exceli failid (.xlsx / .xlsm)",
+                "🔍 Step 2: Upload Match List": "🔍 2. samm: laadige üles vastete loend",
+                "Excel file — column A, sheet 1 — one term per row": "Exceli fail — veerg A, leht 1 — üks termin rea kohta",
+                "⚙️ Step 3: Match Options": "⚙️ 3. samm: vastevalikud",
+                "Match against sheet name": "Otsi vastet lehe nimest",
+                "Match against column:": "Otsi vastet veerust:",
+                "-- Upload source file first --": "-- Laadige esmalt lähtefail üles --",
+                "Headers read from sheet 1. Same column letter is searched across all sheets.": "Päised loetakse lehelt 1. Sama veerutähte otsitakse kõigilt lehtedelt.",
+                "💾 Step 4: Output Folder": "💾 4. samm: väljundkaust",
+                "Folder picker not supported in this browser — files will be downloaded as a single ZIP.": "See brauser ei toeta kaustavalikut — failid laaditakse alla ühe ZIP-failina.",
+                "✂️ Split & Download": "✂️ Jaga ja laadi alla",
+                "Processing...": "Töötleb...",
+                "🔄 Excel to Google Sheets Sync:": "🔄 Excelist Google Sheetsi sünkroonimine:",
+                "Import specific columns from Excel to your Google Sheet with custom column mapping": "Importige Excelist valitud veerud oma Google'i arvutustabelisse kohandatud veerukaardistusega",
+                "⚙️ Google Apps Script Web App URL": "⚙️ Google Apps Scripti veebirakenduse URL",
+                "This app uses a simple Google Apps Script to write to your sheets.": "See rakendus kasutab teie tabelitesse kirjutamiseks lihtsat Google Apps Scripti.",
+                "Need Setup Help?": "Vajate seadistamisel abi?",
+                "Check the Knowledge Base": "Vaadake teadmistebaasi",
+                "for the \"Google Sheets Sync — Complete Setup Guide\".": "\"Google Sheets Sync — Complete Setup Guide\" juhendi jaoks.",
+                "Paste your Google Apps Script Web App URL here": "Kleepige Google Apps Scripti veebirakenduse URL siia",
+                "The URL looks like:": "URL näeb välja nii:",
+                "📊 Google Sheets Configuration": "📊 Google Sheetsi seadistus",
+                "Google Sheets URL or ID:": "Google Sheetsi URL või ID:",
+                "Paste the full Google Sheets URL or just the spreadsheet ID": "Kleepige täielik Google Sheetsi URL või ainult arvutustabeli ID",
+                "Sheet Name (tab name within the spreadsheet):": "Lehe nimi (vahekaardi nimi arvutustabelis):",
+                "e.g., My Data, Sheet1, Import Data": "nt Minu andmed, Sheet1, Import Data",
+                "Click to upload Excel file": "Klõpsake Exceli faili üleslaadimiseks",
+                ".xlsx files only": "Ainult .xlsx failid",
+                "Choose the sheet from your workbook that contains the data you wish to sync.": "Valige töövihikust leht, mis sisaldab sünkroonitavaid andmeid.",
+                "✏️ Import Configuration": "✏️ Impordi seadistus",
+                "Append": "Lisa",
+                "Add after existing data": "Lisa olemasolevate andmete järele",
+                "Overwrite": "Kirjuta üle",
+                "Replace existing data": "Asenda olemasolevad andmed",
+                "📍 Start Row (Optional)": "📍 Algusrida (valikuline)",
+                "Auto-detect": "Tuvasta automaatselt",
+                "Leave empty to append at bottom or overwrite from top.": "Jätke tühjaks, et lisada lõppu või kirjutada üle algusest.",
+                "📄 Data Handling": "📄 Andmete käsitlus",
+                "Include Excel Headers?": "Kaasata Exceli päised?",
+                "Uncheck to sync data only (skips row 1 of Excel).": "Tühjendage märge, et sünkroonida ainult andmeid (jätab Exceli 1. rea vahele).",
+                "🔗 Column Mapping": "🔗 Veergude kaardistus",
+                "Map Excel columns to Google Sheets columns. Use column letters (A, B, C...) for Google Sheets destination.": "Kaardistage Exceli veerud Google Sheetsi veergudele. Kasutage sihtveeru jaoks veerutähti (A, B, C...).",
+                "📗 Excel Column": "📗 Exceli veerg",
+                "📊 Google Sheets Column": "📊 Google Sheetsi veerg",
+                "+ Add Column Mapping": "+ Lisa veerukaardistus",
+                "🚀 Sync to Google Sheets": "🚀 Sünkrooni Google Sheetsiga",
+                "Syncing data...": "Sünkroonib andmeid...",
+                "💡 Need Setup Help?": "💡 Vajate seadistamisel abi?",
+                "check the": "vaadake",
+                "(Tab 4) for the": "(vahekaart 4), et leida",
+                "📚 Knowledge Base:": "📚 Teadmistebaas:",
+                "Browse guides and documentation for using this app": "Sirvige selle rakenduse kasutusjuhendeid ja dokumentatsiooni",
+                "🔍 Search topics...": "🔍 Otsi teemasid...",
+                "Excel Splitter — User Guide": "Exceli jagaja — kasutusjuhend",
+                "Excel Emailer — User Guide": "Exceli e-kirja tööriist — kasutusjuhend",
+                "Ultimate Excel Power Query Guide — Fully Detailed & Commercial Ready": "Täielik Excel Power Query juhend — detailne ja töövalmis",
+                "Google Sheets Sync — Complete Setup Guide": "Google Sheetsi sünkroonimine — täielik seadistusjuhend",
+                "Your Topic Title Here": "Teie teema pealkiri siia",
+                "Background: cinematic side GIFs (click to hide)": "Taust: kinemaatilised külje-GIF-id (klõpsake peitmiseks)",
+                "Background hidden (click to show GIF background)": "Taust on peidetud (klõpsake GIF-tausta kuvamiseks)"
+            }
+        };
+
+        function syncEmbeddedLanguage(lang) {
+            [
+                ['embeddedEmailerFrame', 'embed=1'],
+                ['embeddedFbpCalcFrame', '']
+            ].forEach(([id, baseQuery]) => {
+                const frame = document.getElementById(id);
+                if (!frame) return;
+                try {
+                    const rawSrc = frame.getAttribute('src') || '';
+                    const [path, query = ''] = rawSrc.split('?');
+                    const params = new URLSearchParams(query);
+                    if (baseQuery && !params.has('embed')) params.set('embed', '1');
+                    params.set('lang', lang);
+                    const nextSrc = path + '?' + params.toString();
+                    const loaded = frame.contentDocument &&
+                        frame.contentDocument.location &&
+                        frame.contentDocument.location.href !== 'about:blank';
+                    if (loaded && frame.contentWindow) {
+                        frame.contentWindow.postMessage({ type: 'eve:setLanguage', lang }, '*');
+                    } else if (frame.getAttribute('src') !== nextSrc) {
+                        frame.src = nextSrc;
+                    }
+                } catch (error) {
+                    if (frame.contentWindow) frame.contentWindow.postMessage({ type: 'eve:setLanguage', lang }, '*');
+                }
+            });
+        }
+
+        const eveI18n = createEveI18n({
+            defaultLanguage: 'en',
+            languages: ['en', 'lv', 'et'],
+            translations: eveTranslations,
+            onChange: syncEmbeddedLanguage
+        });
         // ============= KNOWLEDGE BASE DATA =============
         // To add a new topic, simply copy one of the objects below and modify it
         const knowledgeBaseTopics = [
@@ -2852,12 +3133,12 @@ function reply(obj) {
                 icon.src = 'images/no_monkey_icon.png';
                 icon.classList.add('large-scale');
                 text.textContent = 'HIDE.';
-                btn.title = 'Background: cinematic side GIFs (click to hide)';
+                btn.title = eveI18n.t('Background: cinematic side GIFs (click to hide)');
             } else {
                 icon.src = 'images/favicon_munke.png';
                 icon.classList.remove('large-scale');
                 text.textContent = 'MUNKE.';
-                btn.title = 'Background hidden (click to show GIF background)';
+                btn.title = eveI18n.t('Background hidden (click to show GIF background)');
             }
         }
 
@@ -2875,16 +3156,30 @@ function reply(obj) {
 
             if (isDark) {
                 if (icon) icon.textContent = '☀️';
-                text.textContent = 'Light background';
+                text.textContent = eveI18n.t('Light background');
             } else {
                 if (icon) icon.textContent = '🌙';
-                text.textContent = 'Dark background';
+                text.textContent = eveI18n.t('Dark background');
             }
+        }
+
+        function initLanguageControls() {
+            const select = document.getElementById('languageSelect');
+            if (!select) return;
+            select.value = eveI18n.getLanguage();
+            select.addEventListener('change', () => {
+                eveI18n.setLanguage(select.value);
+                updateToggleUI(normalizeBackgroundMode(document.body.dataset.bgMode));
+                updateDarkToggleUI(document.body.classList.contains('dark-bg'));
+            });
+            eveI18n.apply();
+            syncEmbeddedLanguage(eveI18n.getLanguage());
         }
 
         // Initialize Everything
         document.addEventListener('DOMContentLoaded', () => {
             renderKnowledgeBase();
+            initLanguageControls();
 
             // Init Background (supports legacy boolean key)
             let savedBgMode = localStorage.getItem('eve_bg_mode');
@@ -3529,7 +3824,7 @@ function reply(obj) {
         }
 
         function showStatus1(message, type) {
-            status1.textContent = message;
+            status1.textContent = eveI18n.t(message);
             status1.className = 'status show ' + type;
         }
 
@@ -3865,7 +4160,7 @@ function reply(obj) {
         }
 
         function showStatus2(message, type) {
-            status2.textContent = message;
+            status2.textContent = eveI18n.t(message);
             status2.className = 'status show ' + type;
         }
 
@@ -4286,7 +4581,7 @@ function reply(obj) {
         }
 
         function showStatus4(message, type) {
-            status4.textContent = message;
+            status4.textContent = eveI18n.t(message);
             status4.className = 'status show ' + type;
             status4.style.whiteSpace = 'pre-line';
         }
@@ -4652,7 +4947,7 @@ function reply(obj) {
         }
 
         function showStatus5(message, type) {
-            status5.textContent = message;
+            status5.textContent = eveI18n.t(message);
             status5.className = 'status show ' + type;
         }
 

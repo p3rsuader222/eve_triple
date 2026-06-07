@@ -112,6 +112,20 @@
         renderEntryList(els.commonList, []);
         updateReviewSummary();
         updateExportState();
+        applyTranslations();
+        window.addEventListener('eve:language-change', () => {
+            updateAttachmentModeBadge();
+            updateAttachmentUiState();
+            renderReviewRows();
+            renderEntryList(els.excelList, state.excelEntries);
+            renderEntryList(els.presetList, state.presetEntries);
+            renderEntryList(els.commonList, state.commonEntries);
+            applyTranslations();
+        });
+    }
+
+    function applyTranslations() {
+        if (window.emailerI18n) window.emailerI18n.apply();
     }
 
     function bindEvents() {
@@ -592,6 +606,7 @@
                 ? 'Build the review table to see draft jobs.'
                 : 'No warning rows match the current filter.';
             els.reviewRows.innerHTML = `<tr><td colspan="6" class="empty">${escapeHtml(message)}</td></tr>`;
+            applyTranslations();
             return;
         }
 
@@ -637,6 +652,7 @@
         }).join('');
 
         els.reviewRows.innerHTML = html;
+        applyTranslations();
     }
 
     function updateReviewSummary() {
@@ -1301,6 +1317,7 @@
     function renderEntryList(container, entries) {
         if (!entries || entries.length === 0) {
             container.innerHTML = '<div class="list-item meta">No files loaded.</div>';
+            applyTranslations();
             return;
         }
         const limit = 200;
@@ -1315,6 +1332,7 @@
             html.push(`<div class="list-item meta">...and ${entries.length - limit} more</div>`);
         }
         container.innerHTML = html.join('');
+        applyTranslations();
     }
 
     async function collectFilesFromDirectory(dirHandle, filterFn) {
@@ -1385,7 +1403,7 @@
     }
 
     function setStatus(el, message, type) {
-        el.textContent = message;
+        el.textContent = window.emailerI18n ? window.emailerI18n.t(message) : message;
         el.className = `status show ${type}`;
     }
 
@@ -1395,7 +1413,7 @@
     }
 
     function setBadge(el, text, kind) {
-        el.textContent = text;
+        el.textContent = window.emailerI18n ? window.emailerI18n.t(text) : text;
         el.className = `badge ${kind}`;
     }
 
