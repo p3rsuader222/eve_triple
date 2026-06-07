@@ -582,6 +582,11 @@
             gap: 5px;
         }
 
+        .tab.is-internal-only,
+        .tab-content.is-internal-only {
+            display: none !important;
+        }
+
         /* Embedded replacement for legacy email generator (Tab 2) */
         #emailer.use-modern-emailer>.info-box,
         #emailer.use-modern-emailer>.section,
@@ -1943,10 +1948,10 @@
             <div class="tab" data-tab="sheetsplitter">
                 ✂️ Sheet Splitter
             </div>
-            <div class="tab" data-tab="gsync">
+            <div class="tab is-internal-only" data-tab="gsync">
                 🔄 Sheets Sync
             </div>
-            <div class="tab" data-tab="knowledge">
+            <div class="tab is-internal-only" data-tab="knowledge">
                 📚 Knowledge Base
             </div>
         </div>
@@ -2204,7 +2209,7 @@ Best regards</textarea>
             </div>
 
             <!-- Tab 4: Google Sheets Sync -->
-            <div class="tab-content" id="gsync">
+            <div class="tab-content is-internal-only" id="gsync">
                 <div class="info-box">
                     <strong>🔄 Excel to Google Sheets Sync:</strong> Import specific columns from Excel to your Google
                     Sheet with custom column mapping
@@ -2361,7 +2366,7 @@ Best regards</textarea>
             </div>
 
             <!-- Tab 4: Knowledge Base -->
-            <div class="tab-content" id="knowledge">
+            <div class="tab-content is-internal-only" id="knowledge">
                 <div class="info-box">
                     <strong>📚 Knowledge Base:</strong> Browse guides and documentation for using this app
                 </div>
